@@ -1,0 +1,6 @@
+DEFAULT_MCP_URL = "https://news-search-mcp.webz.io/mcp"
+TOKEN_ENV_NAME = "WEBZ_API_TOKEN"
+MCP_URL_ENV_NAME = "WEBZ_MCP_URL"
+MCP_SERVER_NAME = "webz-news-search"
+PREFERRED_TOOL_NAME = "news_search_by_webz"
+MCP_TRANSPORT = "http"

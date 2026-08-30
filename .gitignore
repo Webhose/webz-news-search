@@ -1,0 +1,17 @@
+.venv/
+venv/
+.idea/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+.env.*
+!.env.example
+langchain_tests/
+node_modules/
+*.db

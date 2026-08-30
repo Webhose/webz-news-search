@@ -1,0 +1,171 @@
+from __future__ import annotations
+
+import asyncio
+import os
+from collections.abc import Coroutine
+from typing import Any, TypeVar
+
+from langchain_core.tools import BaseTool, StructuredTool
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+from langchain_webz.consts import (
+    DEFAULT_MCP_URL,
+    MCP_SERVER_NAME,
+    MCP_TRANSPORT,
+    MCP_URL_ENV_NAME,
+    PREFERRED_TOOL_NAME,
+    TOKEN_ENV_NAME,
+)
+
+T = TypeVar("T")
+
+
+class WebzConfigError(ValueError):
+    """raised when the Webz MCP client cannot be configured or loaded."""
+
+
+def resolve_api_token(api_token: str | None = None) -> str:
+    token = (api_token or os.getenv(TOKEN_ENV_NAME) or "").strip()
+    if not token:
+        raise WebzConfigError(
+            f"missing Webz API token. set {TOKEN_ENV_NAME} or pass api_token."
+        )
+    return token
+
+
+def resolve_mcp_url(mcp_url: str | None = None) -> str:
+    url = (mcp_url or os.getenv(MCP_URL_ENV_NAME) or DEFAULT_MCP_URL).strip()
+    if not url:
+        raise WebzConfigError("missing MCP url.")
+    return url.rstrip("/")
+
+
+def build_mcp_connection(api_token: str, mcp_url: str) -> dict[str, dict[str, Any]]:
+    return {
+        MCP_SERVER_NAME: {
+            "transport": MCP_TRANSPORT,
+            "url": mcp_url,
+            "headers": {"Authorization": f"Bearer {api_token}"},
+        }
+    }
+
+
+def pick_news_search_tool(tools: list[BaseTool]) -> BaseTool:
+    if not tools:
+        raise WebzConfigError("MCP server returned no tools.")
+    for tool in tools:
+        if tool.name == PREFERRED_TOOL_NAME:
+            return tool
+    if len(tools) == 1:
+        return tools[0]
+    names = ", ".join(tool.name for tool in tools)
+    raise WebzConfigError(
+        f"MCP server did not expose {PREFERRED_TOOL_NAME}. available tools: {names}"
+    )
+
+
+def flatten_tool_result(result: Any) -> str:
+    """turns MCP/LangChain content blocks into the article text string."""
+    if isinstance(result, tuple) and result:
+        result = result[0]
+    if isinstance(result, str):
+        return result
+    if isinstance(result, list):
+        parts: list[str] = []
+        for item in result:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict) and item.get("text"):
+                parts.append(str(item["text"]))
+        return "\n".join(parts)
+    return str(result)
+
+
+def enable_sync_invoke(tool: BaseTool) -> BaseTool:
+    """adds sync invoke and flattens MCP content blocks to text."""
+    if not isinstance(tool, StructuredTool) or tool.coroutine is None:
+        return tool
+    coroutine = tool.coroutine
+
+    async def run_async(*args: Any, **kwargs: Any) -> str:
+        return flatten_tool_result(await coroutine(*args, **kwargs))
+
+    def run_sync(*args: Any, **kwargs: Any) -> str:
+        return run_coroutine_sync(run_async(*args, **kwargs))
+
+    return tool.model_copy(
+        update={
+            "func": run_sync,
+            "coroutine": run_async,
+            "response_format": "content",
+        }
+    )
+
+
+def run_coroutine_sync(coro: Coroutine[Any, Any, T]) -> T:
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    raise WebzConfigError(
+        "cannot call the sync helper from a running event loop. "
+        "use await aget_webz_tools() or await awebz_news_search()."
+    )
+
+
+async def aget_webz_tools(
+    api_token: str | None = None,
+    mcp_url: str | None = None,
+) -> list[BaseTool]:
+    """
+    loads every tool from the hosted Webz MCP server.
+
+    params:
+    - api_token: webz api token. defaults to WEBZ_API_TOKEN.
+    - mcp_url: mcp endpoint. defaults to production.
+
+    returns:
+    - langchain tools whose schemas come from tools/list.
+    """
+    token = resolve_api_token(api_token)
+    url = resolve_mcp_url(mcp_url)
+    client = MultiServerMCPClient(build_mcp_connection(token, url))
+    # ponytail: schemas come from MCP tools/list; new filters ship with the server, not this package
+    tools = await client.get_tools()
+    if not tools:
+        raise WebzConfigError(f"MCP server at {url} returned no tools.")
+    return [enable_sync_invoke(tool) for tool in tools]
+
+
+def get_webz_tools(
+    api_token: str | None = None,
+    mcp_url: str | None = None,
+) -> list[BaseTool]:
+    return run_coroutine_sync(aget_webz_tools(api_token=api_token, mcp_url=mcp_url))
+
+
+async def awebz_news_search(
+    api_token: str | None = None,
+    mcp_url: str | None = None,
+) -> BaseTool:
+    tools = await aget_webz_tools(api_token=api_token, mcp_url=mcp_url)
+    return pick_news_search_tool(tools)
+
+
+def WebzNewsSearch(
+    api_token: str | None = None,
+    mcp_url: str | None = None,
+) -> BaseTool:
+    """
+    returns the live news search tool from the hosted MCP server.
+
+    params:
+    - api_token: webz api token. defaults to WEBZ_API_TOKEN.
+    - mcp_url: mcp endpoint. defaults to production.
+
+    returns:
+    - langchain tool with the current MCP input schema.
+    """
+    return run_coroutine_sync(
+        awebz_news_search(api_token=api_token, mcp_url=mcp_url)
+    )

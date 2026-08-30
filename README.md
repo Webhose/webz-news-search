@@ -1,1 +1,14 @@
-# webz-news-search
+# Webz News Search integrations
+
+Public SDKs for the hosted Webz.io News Search MCP server:
+
+`https://news-search-mcp.webz.io/mcp`
+
+The MCP server is the source of truth. These packages are thin clients. New filters and tools on the server show up at runtime through `tools/list`.
+
+| Package | Registry | Path |
+| --- | --- | --- |
+| `langchain-webz` | PyPI | `packages/langchain` |
+| `@webz.io/ai-sdk` | npm | `packages/ai-sdk` (not built yet) |
+
+Docs: https://docs.webz.io/docs/webz/news-search-api-mcp
