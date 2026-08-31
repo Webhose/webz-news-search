@@ -9,6 +9,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | Package | Registry | Path |
 | --- | --- | --- |
 | `langchain-webz` | PyPI | `packages/langchain` |
+| `llama-index-tools-webz` | PyPI | `packages/llamaindex` |
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` (not built yet) |
 
 Docs: https://docs.webz.io/docs/webz/news-search-api-mcp
