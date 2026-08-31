@@ -1,0 +1,70 @@
+{
+  "name": "@webz.io/ai-sdk",
+  "version": "0.1.2",
+  "description": "Vercel AI SDK tools for Webz.io News Search - global news in natural language with semantic ranking and rich filters",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "example:search": "tsx examples/run-news-search.ts",
+    "example:agent": "tsx examples/run-agent.ts",
+    "example:npm-smoke": "npm install --prefix examples/npm-smoke && node examples/npm-smoke/run.mjs",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "keywords": [
+    "ai-sdk",
+    "vercel",
+    "webz",
+    "news",
+    "mcp",
+    "search"
+  ],
+  "author": "Webz.io <support@webz.io>",
+  "license": "MIT",
+  "homepage": "https://news-search-mcp.webz.io",
+  "bugs": {
+    "url": "https://github.com/Webhose/webz-news-search/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Webhose/webz-news-search.git",
+    "directory": "packages/ai-sdk"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@ai-sdk/mcp": "^2.0.0"
+  },
+  "peerDependencies": {
+    "ai": ">=5.0.0",
+    "zod": "^3.25.76 || ^4.1.8"
+  },
+  "peerDependenciesMeta": {
+    "ai": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@ai-sdk/openai": "^3.0.105",
+    "@types/node": "^20.17.0",
+    "ai": "^7.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0",
+    "zod": "^4.1.8"
+  }
+}
