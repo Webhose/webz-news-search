@@ -1,0 +1,175 @@
+{
+  "name": "Search news and append rows to Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## News to Google Sheets\n\n**What it does**\n\nRuns a Webz.io news search without an AI agent, splits each article into its own row, and appends those rows to a Google Sheet.\n\n**Who it's for**\n\nAnalysts and ops teams who want a simple scheduled or manual news feed they can share, filter, or chart in Sheets.\n\n**How it works**\n\n1. A manual trigger starts the workflow\n2. The **Settings** node holds the search query, result count, and lookback window\n3. **Webz.io News Search** calls the hosted MCP server and returns one item per article\n4. **Append rows** writes `title`, `url`, `published`, `score`, and `excerpt` into your sheet\n\n**Setup**\n\n1. Install the community node: `@webz.io/n8n-nodes-news-search`\n2. Create a **Webz.io News Search API** credential with your Webz.io token\n3. Connect **Append rows** to Google Sheets OAuth\n4. Update **Settings** with your query and sheet details\n\n**Customizing**\n\nOpen **Webz.io News Search → Additional Filters** for language, country, ticker, sentiment, and the rest. Put the search subject in **Query**, not in **Topic**.",
+        "height": 520,
+        "width": 420
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-760, -120],
+      "id": "c1d2e3f4-1111-4a01-9a01-000000000001",
+      "name": "Overview"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-320, 0],
+      "id": "c1d2e3f4-1111-4a01-9a01-000000000002",
+      "name": "Manual trigger"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1d2e3f4-1111-4a01-9a01-0000000000f1",
+              "name": "query",
+              "value": "central bank interest rate decisions",
+              "type": "string"
+            },
+            {
+              "id": "c1d2e3f4-1111-4a01-9a01-0000000000f2",
+              "name": "limit",
+              "value": 10,
+              "type": "number"
+            },
+            {
+              "id": "c1d2e3f4-1111-4a01-9a01-0000000000f3",
+              "name": "days",
+              "value": 7,
+              "type": "number"
+            },
+            {
+              "id": "c1d2e3f4-1111-4a01-9a01-0000000000f4",
+              "name": "sheetId",
+              "value": "YOUR_SHEET_ID",
+              "type": "string"
+            },
+            {
+              "id": "c1d2e3f4-1111-4a01-9a01-0000000000f5",
+              "name": "sheetName",
+              "value": "News",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [-120, 0],
+      "id": "c1d2e3f4-1111-4a01-9a01-000000000003",
+      "name": "Settings"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "query": "={{ $json.query }}",
+        "limit": "={{ $json.limit }}",
+        "simplify": true,
+        "additionalFilters": {
+          "days": "={{ $json.days }}",
+          "language": [
+            "english"
+          ]
+        }
+      },
+      "type": "@webz.io/n8n-nodes-news-search.webzNewsSearch",
+      "typeVersion": 1,
+      "position": [120, 0],
+      "id": "c1d2e3f4-1111-4a01-9a01-000000000004",
+      "name": "Webz.io News Search",
+      "credentials": {
+        "webzNewsSearchApi": {
+          "id": "",
+          "name": "Webz.io News Search API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Settings').item.json.sheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Settings').item.json.sheetName }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "published": "={{ $json.published }}",
+            "score": "={{ $json.score }}",
+            "excerpt": "={{ $json.excerpt }}",
+            "query": "={{ $json.query }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [360, 0],
+      "id": "c1d2e3f4-1111-4a01-9a01-000000000005",
+      "name": "Append rows",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual trigger": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Webz.io News Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webz.io News Search": {
+      "main": [
+        [
+          {
+            "node": "Append rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
