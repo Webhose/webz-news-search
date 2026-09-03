@@ -29,7 +29,7 @@ Webz is distributed as an [n8n community node](https://docs.n8n.io/integrations/
 
 ## Prerequisites
 
-- n8n 2.x, Cloud or self-hosted (the node declares an `n8n-workflow >= 2 < 3` peer dependency)
+- n8n 2.x, Cloud or self-hosted (the community node declares an `n8n-workflow >= 2 < 3` peer dependency and installs on self-hosted n8n; n8n Cloud can use the built-in MCP Client Tool)
 - A Webz.io API token (same token as the [News Search API](https://docs.webz.io/docs/webz/news-search-api-quickstart))
 - For agent workflows: an **AI Agent** node and any tool-calling chat model
 
@@ -48,17 +48,11 @@ Source: [github.com/Webhose/webz-news-search](https://github.com/Webhose/webz-ne
 
 The node has zero runtime npm dependencies and uses only n8n's own HTTP helpers.
 
-On self-hosted n8n, set these before installing:
+On self-hosted n8n, set this before attaching the node to an AI Agent as a tool:
 
 ```bash
-# required to install packages that are not in n8n's verified registry
-N8N_UNVERIFIED_PACKAGES_ENABLED=true
-
-# required to attach the node to an AI Agent as a tool
 N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 ```
-
-Set `N8N_UNVERIFIED_PACKAGES_ENABLED` explicitly. It currently defaults to `true`, but n8n has announced that the default will become `false`, at which point installs fail without it.
 
 ## Credentials
 
@@ -234,7 +228,6 @@ Webz News Search API
 | API Token | required | Credential field, from the Webz.io dashboard |
 | MCP URL | `https://news-search-mcp.webz.io/mcp` | Hidden credential field, for testing against another MCP endpoint |
 | `N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE` | `false` | Self-hosted only. Required to use the node as an AI Agent tool |
-| `N8N_UNVERIFIED_PACKAGES_ENABLED` | `true` | Self-hosted only. Required to install unverified community packages |
 | `GENERIC_TIMEZONE` | `UTC` | Self-hosted only. Affects scheduled workflows |
 
 ## MCP vs n8n community node
@@ -256,7 +249,7 @@ An AI Agent catches tool errors and answers as though nothing was found, so a br
 The package is not installed on this instance, or the workflow was imported from a release that used a different package name. Install from **Settings → Community nodes** and re-import the template.
 
 **The node does not appear in the node panel**  
-Community packages are disabled, or the install was blocked as unverified. Check `N8N_COMMUNITY_PACKAGES_ENABLED` and `N8N_UNVERIFIED_PACKAGES_ENABLED`.
+Community packages are disabled. Check `N8N_COMMUNITY_PACKAGES_ENABLED` on self-hosted n8n.
 
 **The node cannot be attached to an AI Agent**  
 Set `N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true` and restart n8n. This is not configurable on n8n Cloud.
@@ -272,12 +265,6 @@ Confirm the Bearer Auth credential holds the token, and leave **Tools** set to `
 
 **Self-hosted instance cannot reach the server**  
 Allow outbound HTTPS from the n8n container to `news-search-mcp.webz.io`.
-
-## n8n verified community nodes (future)
-
-n8n maintains a [verified community nodes](https://docs.n8n.io/integrations/community-nodes/) program. Verified nodes install on n8n Cloud and are not affected by the `N8N_UNVERIFIED_PACKAGES_ENABLED` default change. The node is built for submission: zero runtime dependencies, n8n HTTP helpers only, and a passing lint against `eslint-plugin-n8n-nodes-base`.
-
-Suggested listing name: **Webz.io News Search**
 
 ## Related links
 
