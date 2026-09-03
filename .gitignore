@@ -15,3 +15,5 @@ build/
 langchain_tests/
 node_modules/
 *.db
+*.tsbuildinfo
+*.tgz

@@ -45,7 +45,7 @@ jobs:
         working-directory: .
         run: |
           git add packages/n8n-node/package.json packages/n8n-node/package-lock.json
-          git commit -m "ci: bump @webz.io/n8n-nodes-news-search to ${{ steps.bump-version.outputs.version }}"
+          git commit -m "ci: bump n8n-nodes-webz-news-search to ${{ steps.bump-version.outputs.version }}"
           git push
 
       - name: Publish to npm
