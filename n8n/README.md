@@ -6,7 +6,7 @@ You can use Webz.io news search in n8n two ways:
 
 | Approach | Best for |
 | --- | --- |
-| [`@webz.io/n8n-nodes-news-search`](../packages/n8n-node) community node | Standalone workflows, structured article rows, Sheets/Slack automations without an LLM |
+| [`n8n-nodes-webz-news-search`](../packages/n8n-node) community node | Standalone workflows, structured article rows, Sheets/Slack automations without an LLM |
 | Built-in **MCP Client Tool** (below) | AI Agent workflows where the model picks filters from the live MCP schema |
 
 Both talk to the same hosted MCP server and follow the same filter rules as the [`langchain-webz`](../packages/langchain), [`llama-index-tools-webz`](../packages/llamaindex), and [`@webz.io/ai-sdk`](../packages/ai-sdk) packages.
@@ -16,7 +16,7 @@ Both talk to the same hosted MCP server and follow the same filter rules as the 
 Install from **Settings → Community nodes**:
 
 ```
-@webz.io/n8n-nodes-news-search
+n8n-nodes-webz-news-search
 ```
 
 Then add a **Webz.io News Search** node, create a **Webz.io News Search API** credential with your token, and run a search. With **Simplify** enabled, each article becomes its own item with `title`, `url`, `published`, `score`, and `excerpt`.
@@ -110,7 +110,7 @@ Give me the headline, publisher, and URL for each.
 
 - **Leave Tools set to `All`.** n8n has an open bug ([n8n#23421](https://github.com/n8n-io/n8n/issues/23421)) where the Bearer token is not sent to the MCP server when tool selection is narrowed to specific tools. Since the Webz.io server exposes one tool, `All` is the right setting anyway.
 - **Set the timezone before trusting a schedule.** Two of the templates are scheduled and n8n defaults to UTC, so an 08:00 digest fires at 08:00 UTC until you change it. On n8n Cloud set it per workflow under **Workflow Settings → Timezone**, or instance-wide in your account settings. When self-hosting, set the `GENERIC_TIMEZONE` environment variable.
-- **The MCP Client Tool is an agent sub-node.** It cannot run on its own, so every workflow using it needs an AI Agent node and a chat model. For news search without an LLM in the loop, use the [`@webz.io/n8n-nodes-news-search`](../packages/n8n-node) community node instead.
+- **The MCP Client Tool is an agent sub-node.** It cannot run on its own, so every workflow using it needs an AI Agent node and a chat model. For news search without an LLM in the loop, use the [`n8n-nodes-webz-news-search`](../packages/n8n-node) community node instead.
 - **Any tool-calling model works.** The templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenRouter-backed OpenAI-compatible node and the rest of the workflow is unchanged.
 - **Self-hosted n8n needs network access** from the n8n container to `news-search-mcp.webz.io` over HTTPS.
 - **Calls use your normal API credits.** Each tool call is a regular News Search API request, with the same credits and rate limits as any other client.

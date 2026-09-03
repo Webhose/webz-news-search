@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## News to Google Sheets\n\n**What it does**\n\nRuns a Webz.io news search without an AI agent, splits each article into its own row, and appends those rows to a Google Sheet.\n\n**Who it's for**\n\nAnalysts and ops teams who want a simple scheduled or manual news feed they can share, filter, or chart in Sheets.\n\n**How it works**\n\n1. A manual trigger starts the workflow\n2. The **Settings** node holds the search query, result count, and lookback window\n3. **Webz.io News Search** calls the hosted MCP server and returns one item per article\n4. **Append rows** writes `title`, `url`, `published`, `score`, and `excerpt` into your sheet\n\n**Setup**\n\n1. Install the community node: `@webz.io/n8n-nodes-news-search`\n2. Create a **Webz.io News Search API** credential with your Webz.io token\n3. Connect **Append rows** to Google Sheets OAuth\n4. Update **Settings** with your query and sheet details\n\n**Customizing**\n\nOpen **Webz.io News Search → Additional Filters** for language, country, ticker, sentiment, and the rest. Put the search subject in **Query**, not in **Topic**.",
+        "content": "## News to Google Sheets\n\n**What it does**\n\nRuns a Webz.io news search without an AI agent, splits each article into its own row, and appends those rows to a Google Sheet.\n\n**Who it's for**\n\nAnalysts and ops teams who want a simple scheduled or manual news feed they can share, filter, or chart in Sheets.\n\n**How it works**\n\n1. A manual trigger starts the workflow\n2. The **Settings** node holds the search query, result count, and lookback window\n3. **Webz.io News Search** calls the hosted MCP server and returns one item per article\n4. **Append rows** writes `title`, `url`, `published`, `score`, and `excerpt` into your sheet\n\n**Setup**\n\n1. Install the community node: `n8n-nodes-webz-news-search`\n2. Create a **Webz.io News Search API** credential with your Webz.io token\n3. Connect **Append rows** to Google Sheets OAuth\n4. Update **Settings** with your query and sheet details\n\n**Customizing**\n\nOpen **Webz.io News Search → Additional Filters** for language, country, ticker, sentiment, and the rest. Put the search subject in **Query**, not in **Topic**.",
         "height": 520,
         "width": 420
       },
@@ -79,7 +79,7 @@
           ]
         }
       },
-      "type": "@webz.io/n8n-nodes-news-search.webzNewsSearch",
+      "type": "n8n-nodes-webz-news-search.webzNewsSearch",
       "typeVersion": 1,
       "position": [120, 0],
       "id": "c1d2e3f4-1111-4a01-9a01-000000000004",
