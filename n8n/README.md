@@ -9,7 +9,7 @@ You can use Webz.io news search in n8n two ways:
 | [`n8n-nodes-webz-news-search`](../packages/n8n-node) community node | Standalone workflows, structured article rows, Sheets/Slack automations without an LLM |
 | Built-in **MCP Client Tool** (below) | AI Agent workflows where the model picks filters from the live MCP schema |
 
-Both talk to the same hosted MCP server and follow the same filter rules as the [`langchain-webz`](../packages/langchain), [`llama-index-tools-webz`](../packages/llamaindex), and [`@webz.io/ai-sdk`](../packages/ai-sdk) packages.
+Both talk to the same hosted MCP server and follow the same filter rules as the [`langchain-webz`](../packages/langchain), [`llama-index-tools-webz`](../packages/llamaindex), [`ag2-webzio`](../packages/ag2), and [`@webz.io/ai-sdk`](../packages/ai-sdk) packages.
 
 ## Community node
 
