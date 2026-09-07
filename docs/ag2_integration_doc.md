@@ -198,4 +198,5 @@ After `ag2-webzio` is stable on PyPI, Webz.io will contribute `WebzioNewsSearchT
 - [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters)
 - [AG2 MCP servers guide](https://docs.ag2.ai/docs/user-guide/tools/mcp_servers/)
 - [PyPI: ag2-webzio](https://pypi.org/project/ag2-webzio/)
+- [CrewAI Webzio integration](https://docs.webz.io/docs/webz/crewai-webzio) (draft: [docs/crewai_integration_doc.md](../crewai_integration_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)
