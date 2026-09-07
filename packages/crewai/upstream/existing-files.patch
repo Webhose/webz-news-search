@@ -1,0 +1,296 @@
+commit d00d9d4193062981a2973a654e05ddead69bdffc
+Author: ShakedDegani <shaked@webz.io>
+Date:   Mon Sep 7 13:07:01 2026 +0300
+
+    feat(tools): add WebzioNewsSearchTool for Webz.io news search
+    
+    Adds a news search tool backed by Webz.io's hosted News Search MCP
+    server, so agents can search global news articles and blog posts and
+    get back title, url, publication date, source, language and text.
+    
+    The tool fetches its argument schema from the MCP server on
+    construction, which keeps the ~26 server-side filters (language,
+    country, published date, sentiment, domain, ...) available to agents
+    without a crewai-tools release whenever Webz.io adds one. Construction
+    falls back to a query-only schema and retries on the first search when
+    the server is unreachable or the token is missing, so building the tool
+    stays safe at import time and under pytest's --block-network.
+
+diff --git a/docs/docs.json b/docs/docs.json
+index 865947d..3a096c1 100644
+--- a/docs/docs.json
++++ b/docs/docs.json
+@@ -274,7 +274,8 @@
+                           "edge/en/tools/search-research/serpapi-googlesearchtool",
+                           "edge/en/tools/search-research/serpapi-googleshoppingtool",
+                           "edge/en/tools/search-research/databricks-query-tool",
+-                          "edge/en/tools/search-research/youai-search"
++                          "edge/en/tools/search-research/youai-search",
++                          "edge/en/tools/search-research/webzionewssearchtool"
+                         ]
+                       },
+                       {
+@@ -14733,7 +14734,8 @@
+                           "edge/pt-BR/tools/search-research/websitesearchtool",
+                           "edge/pt-BR/tools/search-research/codedocssearchtool",
+                           "edge/pt-BR/tools/search-research/youtubechannelsearchtool",
+-                          "edge/pt-BR/tools/search-research/youtubevideosearchtool"
++                          "edge/pt-BR/tools/search-research/youtubevideosearchtool",
++                          "edge/pt-BR/tools/search-research/webzionewssearchtool"
+                         ]
+                       },
+                       {
+@@ -28188,7 +28190,8 @@
+                           "edge/ko/tools/search-research/arxivpapertool",
+                           "edge/ko/tools/search-research/serpapi-googlesearchtool",
+                           "edge/ko/tools/search-research/serpapi-googleshoppingtool",
+-                          "edge/ko/tools/search-research/databricks-query-tool"
++                          "edge/ko/tools/search-research/databricks-query-tool",
++                          "edge/ko/tools/search-research/webzionewssearchtool"
+                         ]
+                       },
+                       {
+@@ -42089,7 +42092,8 @@
+                           "edge/ar/tools/search-research/arxivpapertool",
+                           "edge/ar/tools/search-research/serpapi-googlesearchtool",
+                           "edge/ar/tools/search-research/serpapi-googleshoppingtool",
+-                          "edge/ar/tools/search-research/databricks-query-tool"
++                          "edge/ar/tools/search-research/databricks-query-tool",
++                          "edge/ar/tools/search-research/webzionewssearchtool"
+                         ]
+                       },
+                       {
+diff --git a/docs/edge/ar/tools/search-research/overview.mdx b/docs/edge/ar/tools/search-research/overview.mdx
+index 6b73d12..0980363 100644
+--- a/docs/edge/ar/tools/search-research/overview.mdx
++++ b/docs/edge/ar/tools/search-research/overview.mdx
+@@ -65,6 +65,10 @@ mode: "wide"
+   <Card title="تسوق Google عبر SerpApi" icon="cart-shopping" href="/ar/tools/search-research/serpapi-googleshoppingtool">
+     استعلامات Google Shopping عبر SerpApi.
+   </Card>
++
++  <Card title="أداة بحث أخبار Webzio" icon="newspaper" href="/ar/tools/search-research/webzionewssearchtool">
++    ابحث في المقالات الإخبارية ومنشورات المدونات من مختلف أنحاء العالم باستخدام Webz.io.
++  </Card>
+ </CardGroup>
+ 
+ ## **حالات الاستخدام الشائعة**
+diff --git a/docs/edge/en/tools/search-research/overview.mdx b/docs/edge/en/tools/search-research/overview.mdx
+index 6fdd841..6107973 100644
+--- a/docs/edge/en/tools/search-research/overview.mdx
++++ b/docs/edge/en/tools/search-research/overview.mdx
+@@ -73,6 +73,10 @@ These tools enable your agents to search the web, research topics, and find info
+   <Card title="SerpApi Google Shopping" icon="cart-shopping" href="/en/tools/search-research/serpapi-googleshoppingtool">
+     Google Shopping queries via SerpApi.
+   </Card>
++
++  <Card title="Webzio News Search Tool" icon="newspaper" href="/en/tools/search-research/webzionewssearchtool">
++    Search global news articles and blog posts with Webz.io.
++  </Card>
+ </CardGroup>
+ 
+ ## **Common Use Cases**
+diff --git a/docs/edge/ko/tools/search-research/overview.mdx b/docs/edge/ko/tools/search-research/overview.mdx
+index ff59c38..b6d3f46 100644
+--- a/docs/edge/ko/tools/search-research/overview.mdx
++++ b/docs/edge/ko/tools/search-research/overview.mdx
+@@ -65,6 +65,10 @@ mode: "wide"
+   <Card title="SerpApi Google Shopping" icon="cart-shopping" href="/ko/tools/search-research/serpapi-googleshoppingtool">
+     SerpApi를 통한 Google 쇼핑 쿼리.
+   </Card>
++
++  <Card title="Webzio 뉴스 검색 도구" icon="newspaper" href="/ko/tools/search-research/webzionewssearchtool">
++    Webz.io로 전 세계 뉴스 기사와 블로그 게시물을 검색합니다.
++  </Card>
+ </CardGroup>
+ 
+ ## **일반적인 사용 사례**
+diff --git a/docs/edge/pt-BR/tools/search-research/overview.mdx b/docs/edge/pt-BR/tools/search-research/overview.mdx
+index bece435..10e1565 100644
+--- a/docs/edge/pt-BR/tools/search-research/overview.mdx
++++ b/docs/edge/pt-BR/tools/search-research/overview.mdx
+@@ -45,6 +45,10 @@ Essas ferramentas permitem que seus agentes pesquisem na web, explorem tópicos
+   <Card title="YouTube Video Search" icon="play" href="/pt-BR/tools/search-research/youtubevideosearchtool">
+     Encontre e analise vídeos do YouTube por assunto, palavra-chave ou critério.
+   </Card>
++
++  <Card title="Ferramenta de Busca de Notícias Webzio" icon="newspaper" href="/pt-BR/tools/search-research/webzionewssearchtool">
++    Busque artigos de notícias e posts de blog do mundo inteiro com a Webz.io.
++  </Card>
+ </CardGroup>
+ 
+ ## **Casos de Uso Comuns**
+diff --git a/lib/crewai-tools/src/crewai_tools/__init__.py b/lib/crewai-tools/src/crewai_tools/__init__.py
+index bb8a946..f29d35c 100644
+--- a/lib/crewai-tools/src/crewai_tools/__init__.py
++++ b/lib/crewai-tools/src/crewai_tools/__init__.py
+@@ -214,6 +214,9 @@ from crewai_tools.tools.vision_tool.vision_tool import VisionTool
+ from crewai_tools.tools.wait_tool.wait_tool import WaitTool
+ from crewai_tools.tools.weaviate_tool.vector_search import WeaviateVectorSearchTool
+ from crewai_tools.tools.website_search.website_search_tool import WebsiteSearchTool
++from crewai_tools.tools.webzio_tools.webzio_news_search_tool import (
++    WebzioNewsSearchTool,
++)
+ from crewai_tools.tools.xml_search_tool.xml_search_tool import XMLSearchTool
+ from crewai_tools.tools.youtube_channel_search_tool.youtube_channel_search_tool import (
+     YoutubeChannelSearchTool,
+@@ -333,6 +336,7 @@ __all__ = [
+     "WaitTool",
+     "WeaviateVectorSearchTool",
+     "WebsiteSearchTool",
++    "WebzioNewsSearchTool",
+     "XMLSearchTool",
+     "YoutubeChannelSearchTool",
+     "YoutubeVideoSearchTool",
+diff --git a/lib/crewai-tools/src/crewai_tools/tools/__init__.py b/lib/crewai-tools/src/crewai_tools/tools/__init__.py
+index 2653490..12b12b7 100644
+--- a/lib/crewai-tools/src/crewai_tools/tools/__init__.py
++++ b/lib/crewai-tools/src/crewai_tools/tools/__init__.py
+@@ -201,6 +201,9 @@ from crewai_tools.tools.vision_tool.vision_tool import VisionTool
+ from crewai_tools.tools.wait_tool.wait_tool import WaitTool
+ from crewai_tools.tools.weaviate_tool.vector_search import WeaviateVectorSearchTool
+ from crewai_tools.tools.website_search.website_search_tool import WebsiteSearchTool
++from crewai_tools.tools.webzio_tools.webzio_news_search_tool import (
++    WebzioNewsSearchTool,
++)
+ from crewai_tools.tools.xml_search_tool.xml_search_tool import XMLSearchTool
+ from crewai_tools.tools.youtube_channel_search_tool.youtube_channel_search_tool import (
+     YoutubeChannelSearchTool,
+@@ -316,6 +319,7 @@ __all__ = [
+     "WaitTool",
+     "WeaviateVectorSearchTool",
+     "WebsiteSearchTool",
++    "WebzioNewsSearchTool",
+     "XMLSearchTool",
+     "YoutubeChannelSearchTool",
+     "YoutubeVideoSearchTool",
+diff --git a/lib/crewai-tools/tool.specs.json b/lib/crewai-tools/tool.specs.json
+index 2b614ba..9d0ae92 100644
+--- a/lib/crewai-tools/tool.specs.json
++++ b/lib/crewai-tools/tool.specs.json
+@@ -28419,6 +28419,125 @@
+         "type": "object"
+       }
+     },
++    {
++      "description": "Search global news articles and blog posts with Webz.io. Returns matching articles with title, url, publication date, source, language and text. Supports filtering by language, country, published date, sentiment, site and more; pass only the filters you were asked for.",
++      "env_vars": [
++        {
++          "default": null,
++          "description": "API token for the Webz.io News API",
++          "name": "WEBZ_API_TOKEN",
++          "required": true
++        },
++        {
++          "default": null,
++          "description": "Override for the Webz.io News Search MCP endpoint",
++          "name": "WEBZ_MCP_URL",
++          "required": false
++        }
++      ],
++      "humanized_name": "Webzio News Search",
++      "init_params_schema": {
++        "$defs": {
++          "EnvVar": {
++            "properties": {
++              "default": {
++                "anyOf": [
++                  {
++                    "type": "string"
++                  },
++                  {
++                    "type": "null"
++                  }
++                ],
++                "default": null,
++                "title": "Default"
++              },
++              "description": {
++                "title": "Description",
++                "type": "string"
++              },
++              "name": {
++                "title": "Name",
++                "type": "string"
++              },
++              "required": {
++                "default": true,
++                "title": "Required",
++                "type": "boolean"
++              }
++            },
++            "required": [
++              "name",
++              "description"
++            ],
++            "title": "EnvVar",
++            "type": "object"
++          },
++          "ToolFailurePolicy": {
++            "description": "How an agent reacts when one of its tools reports a failure.",
++            "enum": [
++              "ignore",
++              "warn",
++              "raise"
++            ],
++            "title": "ToolFailurePolicy",
++            "type": "string"
++          }
++        },
++        "description": "Search global news coverage with Webz.io over its hosted MCP server.\n\nThe argument schema is fetched from the MCP server when the tool is built,\nso filters that Webz.io adds server-side become available to the agent\nwithout a crewai-tools release. Construction does not fail when the server\nis unreachable: the tool keeps :class:`WebzioNewsSearchToolSchema` and\nretries the connection on the first call, which is where a missing token or\nan unreachable server is reported.\n\nThe MCP session stays open for reuse. Close it with :meth:`stop`, or use the\ntool as a context manager.\n\nAttributes:\n    api_token: The Webz.io API token.\n    mcp_url: The News Search MCP endpoint.\n    connect_timeout: Seconds allowed for the MCP connection.",
++        "properties": {
++          "api_token": {
++            "anyOf": [
++              {
++                "type": "string"
++              },
++              {
++                "type": "null"
++              }
++            ],
++            "description": "Webz.io API token. Falls back to the WEBZ_API_TOKEN environment variable when not provided.",
++            "required": false,
++            "title": "Api Token"
++          },
++          "connect_timeout": {
++            "default": 30,
++            "description": "Seconds to wait for the MCP server connection.",
++            "title": "Connect Timeout",
++            "type": "integer"
++          },
++          "mcp_url": {
++            "description": "News Search MCP endpoint. Falls back to the WEBZ_MCP_URL environment variable, then to the hosted endpoint.",
++            "required": false,
++            "title": "Mcp Url",
++            "type": "string"
++          }
++        },
++        "required": [],
++        "title": "WebzioNewsSearchTool",
++        "type": "object"
++      },
++      "name": "WebzioNewsSearchTool",
++      "package_dependencies": [
++        "mcp",
++        "mcpadapt"
++      ],
++      "run_params_schema": {
++        "additionalProperties": true,
++        "description": "Fallback arguments, used until the live MCP schema has been fetched.\n\nExtra keys are allowed so that server-side filters still reach Webz.io when\nthe tool is running on this fallback; the MCP server validates them.",
++        "properties": {
++          "query": {
++            "description": "The news search query string.",
++            "title": "Query",
++            "type": "string"
++          }
++        },
++        "required": [
++          "query"
++        ],
++        "title": "WebzioNewsSearchToolSchema",
++        "type": "object"
++      }
++    },
+     {
+       "description": "A tool that can be used to semantic search a query from a XML's content.",
+       "env_vars": [],

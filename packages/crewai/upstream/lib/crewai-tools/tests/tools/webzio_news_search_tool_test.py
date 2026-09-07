@@ -1,102 +1,177 @@
-from __future__ import annotations
+import os
+from unittest.mock import MagicMock, patch
 
-from types import SimpleNamespace
-from unittest.mock import patch
-
-import pytest
-from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
-
+from crewai_tools import WebzioNewsSearchTool
 from crewai_tools.tools.webzio_tools.webzio_news_search_tool import (
-    PREFERRED_TOOL_NAME,
-    TOKEN_ENV_NAME,
-    WebzConfigError,
-    WebzioNewsSearchTool,
-    build_server_params,
-    pick_news_search_tool,
-    resolve_api_token,
-    resolve_mcp_url,
+    DEFAULT_MCP_URL,
+    MCP_TOOL_NAME,
+    WebzioNewsSearchToolSchema,
 )
+from pydantic import BaseModel, Field
+import pytest
 
 
-class LiveArgsSchema(BaseModel):
-    query: str = Field(..., description="Search query")
-    k: int = Field(default=10, description="Number of results")
-    extra_filter: str = Field(default="x", description="From MCP server")
+ADAPTER_PATH = "crewai_tools.tools.webzio_tools.webzio_news_search_tool.MCPServerAdapter"
+MCP_RESULT = '{"posts": [{"title": "AI Act enters force", "url": "https://example.com"}]}'
 
 
-class FakeLiveTool(BaseTool):
-    name: str = PREFERRED_TOOL_NAME
-    description: str = "Live MCP news search tool"
-    args_schema: type[BaseModel] = LiveArgsSchema
+class LiveSchema(BaseModel):
+    """Stand-in for the argument schema the MCP server advertises."""
 
-    def _run(self, **kwargs: object) -> str:
-        return f"result:{kwargs.get('query')}"
+    query: str = Field(..., description="The news search query string.")
+    language: str | None = Field(None, description="Language filter.")
 
 
-class FakeMcpAdapter:
-    def __init__(
-        self,
-        serverparams: dict,
-        *tool_names: str,
-        connect_timeout: int = 30,
-    ) -> None:
-        self.serverparams = serverparams
-        self.tool_names = tool_names
-        self.connect_timeout = connect_timeout
-        self._stopped = False
-        self.tools = [FakeLiveTool()]
-
-    def stop(self) -> None:
-        self._stopped = True
+@pytest.fixture(autouse=True)
+def clear_webz_env():
+    with patch.dict(os.environ, {}, clear=True):
+        yield
 
 
-def test_resolve_api_token_requires_value(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv(TOKEN_ENV_NAME, raising=False)
-    with pytest.raises(WebzConfigError, match="missing Webz API token"):
-        resolve_api_token()
+@pytest.fixture
+def mcp_tool():
+    tool = MagicMock()
+    tool.name = MCP_TOOL_NAME
+    tool.args_schema = LiveSchema
+    tool._run.return_value = MCP_RESULT
+    return tool
 
 
-@patch(
-    "crewai_tools.tools.webzio_tools.webzio_news_search_tool.MCPServerAdapter",
-    FakeMcpAdapter,
-)
-def test_webzio_news_search_tool_loads_live_schema_and_delegates_run() -> None:
-    tool = WebzioNewsSearchTool(api_token="tok", mcp_url="https://example.test/mcp")
-    try:
-        assert tool.name == PREFERRED_TOOL_NAME
-        assert "query" in tool.arg_names
-        assert "extra_filter" in tool.arg_names
-        assert tool._run(query="EU AI", k=3) == "result:EU AI"
-    finally:
-        tool.stop()
+@pytest.fixture
+def mock_adapter(mcp_tool):
+    with patch(ADAPTER_PATH) as adapter_class:
+        adapter_class.return_value.tools = [mcp_tool]
+        yield adapter_class
 
 
-@patch(
-    "crewai_tools.tools.webzio_tools.webzio_news_search_tool.MCPServerAdapter",
-    FakeMcpAdapter,
-)
-def test_webzio_news_search_tool_context_manager_stops_adapter() -> None:
-    with WebzioNewsSearchTool(api_token="tok") as tool:
-        assert tool._adapter is not None
-        adapter = tool._adapter
-    assert adapter._stopped is True
+def test_connects_with_explicit_token(mock_adapter):
+    WebzioNewsSearchTool(api_token="test-token")
+
+    server_params, tool_name = mock_adapter.call_args.args
+    assert tool_name == MCP_TOOL_NAME
+    assert server_params["url"] == DEFAULT_MCP_URL
+    assert server_params["headers"] == {"Authorization": "Bearer test-token"}
+    assert mock_adapter.call_args.kwargs == {"connect_timeout": 30}
 
 
-def test_pick_news_search_tool_prefers_named_tool() -> None:
-    preferred = SimpleNamespace(name=PREFERRED_TOOL_NAME)
-    other = SimpleNamespace(name="other_tool")
-    assert pick_news_search_tool([other, preferred]) is preferred  # type: ignore[arg-type]
+def test_reads_token_and_url_from_environment(mock_adapter):
+    with patch.dict(
+        os.environ,
+        {"WEBZ_API_TOKEN": "env-token", "WEBZ_MCP_URL": "https://mcp.example.com/mcp/"},
+        clear=True,
+    ):
+        WebzioNewsSearchTool()
+
+    server_params = mock_adapter.call_args.args[0]
+    assert server_params["url"] == "https://mcp.example.com/mcp"
+    assert server_params["headers"] == {"Authorization": "Bearer env-token"}
 
 
-def test_build_server_params_uses_bearer_header() -> None:
-    params = build_server_params("secret-token", mcp_url="https://example.test/mcp")
-    assert params["headers"]["Authorization"] == "Bearer secret-token"
-    assert params["transport"] == "streamable-http"
+def test_adopts_live_args_schema(mock_adapter):
+    tool = WebzioNewsSearchTool(api_token="test-token")
+
+    assert tool.args_schema is LiveSchema
+    assert "language" in tool.args_schema.model_fields
 
 
-def test_deprecated_alias_excluded_from_tool_specs() -> None:
+def test_run_delegates_to_the_mcp_tool(mock_adapter, mcp_tool):
+    tool = WebzioNewsSearchTool(api_token="test-token")
+
+    result = tool._run(query="ai regulation", language="english")
+
+    mcp_tool._run.assert_called_once_with(query="ai regulation", language="english")
+    assert result == MCP_RESULT
+
+
+def test_connects_once_across_runs(mock_adapter):
+    tool = WebzioNewsSearchTool(api_token="test-token")
+    tool._run(query="first")
+    tool._run(query="second")
+
+    assert mock_adapter.call_count == 1
+
+
+def test_construction_survives_an_unreachable_server():
+    with patch(ADAPTER_PATH, side_effect=RuntimeError("connection refused")):
+        tool = WebzioNewsSearchTool(api_token="test-token")
+
+    assert tool.args_schema is WebzioNewsSearchToolSchema
+
+
+def test_construction_survives_a_missing_token():
+    with patch(ADAPTER_PATH) as adapter_class:
+        tool = WebzioNewsSearchTool()
+
+    adapter_class.assert_not_called()
+    assert tool.args_schema is WebzioNewsSearchToolSchema
+
+
+def test_run_reports_a_missing_token():
+    tool = WebzioNewsSearchTool()
+
+    with pytest.raises(ValueError, match="WEBZ_API_TOKEN"):
+        tool._run(query="ai regulation")
+
+
+def test_run_retries_a_deferred_connection(mock_adapter, mcp_tool):
+    with patch(ADAPTER_PATH, side_effect=RuntimeError("connection refused")):
+        tool = WebzioNewsSearchTool(api_token="test-token")
+
+    tool._run(query="ai regulation")
+
+    assert mock_adapter.call_count == 1
+    mcp_tool._run.assert_called_once_with(query="ai regulation")
+
+
+def test_run_reports_a_server_without_the_news_search_tool():
+    with patch(ADAPTER_PATH) as adapter_class:
+        adapter_class.return_value.tools = []
+        tool = WebzioNewsSearchTool(api_token="test-token")
+
+        with pytest.raises(ValueError, match=MCP_TOOL_NAME):
+            tool._run(query="ai regulation")
+
+
+def test_stop_closes_the_session_and_a_later_run_reconnects(mock_adapter):
+    tool = WebzioNewsSearchTool(api_token="test-token")
+    tool.stop()
+
+    mock_adapter.return_value.stop.assert_called_once()
+
+    tool._run(query="ai regulation")
+    assert mock_adapter.call_count == 2
+
+
+def test_stop_is_idempotent(mock_adapter):
+    tool = WebzioNewsSearchTool(api_token="test-token")
+    tool.stop()
+    tool.stop()
+
+    mock_adapter.return_value.stop.assert_called_once()
+
+
+def test_context_manager_closes_the_session(mock_adapter):
+    with WebzioNewsSearchTool(api_token="test-token") as tool:
+        assert tool.args_schema is LiveSchema
+
+    mock_adapter.return_value.stop.assert_called_once()
+
+
+def test_fallback_schema_allows_server_side_filters():
+    validated = WebzioNewsSearchToolSchema.model_validate(
+        {"query": "ai regulation", "language": "english"}
+    )
+
+    assert validated.model_dump() == {"query": "ai regulation", "language": "english"}
+
+
+def test_appears_in_tool_specs():
     from crewai_tools.generate_tool_specs import ToolSpecExtractor
 
-    names = {tool["name"] for tool in ToolSpecExtractor().extract_all_tools()}
-    assert "WebzioNewsSearchTool" in names
+    specs = {tool["name"]: tool for tool in ToolSpecExtractor().extract_all_tools()}
+
+    assert specs["WebzioNewsSearchTool"]["humanized_name"] == "Webzio News Search"
+    assert {env["name"] for env in specs["WebzioNewsSearchTool"]["env_vars"]} == {
+        "WEBZ_API_TOKEN",
+        "WEBZ_MCP_URL",
+    }

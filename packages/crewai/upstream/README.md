@@ -1,44 +1,67 @@
 # Upstream contribution to crewAIInc/crewAI
 
-This directory contains files ready to copy into a PR against [crewAIInc/crewAI](https://github.com/crewAIInc/crewAI).
+`WebzioNewsSearchTool` has been submitted to the official tool catalog:
 
-## PR checklist
+- Issue: [crewAIInc/crewAI#7308](https://github.com/crewAIInc/crewAI/issues/7308)
+- Pull request: [crewAIInc/crewAI#7309](https://github.com/crewAIInc/crewAI/pull/7309)
+- Branch: [`ShakedDegani/crewAI:feat/webzio-news-search-tool`](https://github.com/ShakedDegani/crewAI/tree/feat/webzio-news-search-tool)
 
-1. Copy `lib/crewai-tools/src/crewai_tools/tools/webzio_tools/webzio_news_search_tool.py` into the fork.
-2. Add to `lib/crewai-tools/src/crewai_tools/tools/__init__.py`:
-   ```python
-   from crewai_tools.tools.webzio_tools.webzio_news_search_tool import (
-       WebzioNewsSearchTool,
-   )
-   ```
-   and add `"WebzioNewsSearchTool"` to `__all__`.
-3. Add to `lib/crewai-tools/src/crewai_tools/__init__.py` the same import and export.
-4. Copy `lib/crewai-tools/tests/tools/webzio_news_search_tool_test.py`.
-5. Copy `docs/en/tools/search-research/webzionewssearchtool.mdx`.
-6. Add a card to `docs/en/tools/search-research/overview.mdx` (Search & Research section).
-7. Register the page in the docs nav (`docs.json` or equivalent Mintlify config).
-8. Regenerate tool specs:
-   ```bash
-   cd lib/crewai-tools
-   python -m crewai_tools.generate_tool_specs
-   ```
-9. Run tests:
-   ```bash
-   pytest lib/crewai-tools/tests/tools/webzio_news_search_tool_test.py
-   ```
+This directory is a record of exactly what was submitted, so the upstream tool
+and the standalone [`crewai-webzio`](https://pypi.org/project/crewai-webzio/)
+package can be kept in sync.
 
-No new vendor SDK dependency is required — the tool uses the existing `mcp` extra via `MCPServerAdapter`.
+## Contents
 
-## Suggested PR title
+New files, at their upstream paths:
 
-`feat(tools): add WebzioNewsSearchTool for Webz.io news search via MCP`
+```
+lib/crewai-tools/src/crewai_tools/tools/webzio_tools/webzio_news_search_tool.py
+lib/crewai-tools/tests/tools/webzio_news_search_tool_test.py
+docs/edge/{en,ar,ko,pt-BR}/tools/search-research/webzionewssearchtool.mdx
+```
 
-## Suggested PR description
+`existing-files.patch` holds the edits to files that already existed upstream:
+the two `__init__.py` export lists, the four Search & Research `overview.mdx`
+card groups, the `docs.json` nav entries, and the regenerated
+`tool.specs.json` entry.
 
-- Adds `WebzioNewsSearchTool` wrapping the hosted Webz News Search MCP server
-- Filter schema loaded live from MCP `tools/list` (not hardcoded)
-- Auth via `WEBZ_API_TOKEN` (Bearer) and optional `WEBZ_MCP_URL`
-- Docs page under Search & Research, modeled on ExaSearchTool
-- Unit tests mock `MCPServerAdapter` (no live token in CI)
+## Differences from the standalone package
 
-Maintained by Webz.io. Standalone PyPI package: [crewai-webzio](https://pypi.org/project/crewai-webzio/).
+The upstream tool is not a copy of `packages/crewai/crewai_webzio/tool.py`.
+The differences were driven by upstream conventions and CI:
+
+- `MCPServerAdapter` is imported from `crewai_tools.adapters.mcp_adapter`
+  rather than from `crewai_tools`.
+- `api_token`, `mcp_url` and `connect_timeout` are Pydantic fields with
+  env-var default factories, not init-only arguments. `ToolSpecExtractor`
+  reads `model_json_schema`, so only real fields reach
+  `tool.specs.json`'s `init_params_schema`.
+- The agent-facing `name` is `"Webzio News Search"`, matching the catalog
+  convention ("Brave News Search", "Tavily Search"), rather than the
+  MCP-native `news_search_by_webz`.
+- Construction never raises on a connection failure. It falls back to the
+  `query`-only schema and retries on the first search. The repo runs pytest
+  with `--block-network`, and tools are commonly built at import time, so an
+  eager `RuntimeError` from `MCPServerAdapter.__init__` was not acceptable.
+- The class-level `description` is kept as authored instead of adopting the
+  live MCP tool's description, because `CrewAIToolAdapter` rewrites that into
+  a `Tool Name: ... / Tool Arguments: ... / Tool Description: ...` composite.
+  Only `args_schema` is adopted from the server; `BaseTool.formatted_description`
+  recombines it for the LLM at prompt time.
+
+## Checks run before opening the PR
+
+```bash
+uv run pytest lib/crewai-tools/tests/tools/webzio_news_search_tool_test.py   # 15 passed
+uv run ruff check lib/                                                       # All checks passed
+uv run ruff format --check lib/                                              # 919 files already formatted
+uv run mypy lib/crewai-tools/src/crewai_tools/tools/webzio_tools/            # Success
+cd lib/crewai-tools && uv run python src/crewai_tools/generate_tool_specs.py
+```
+
+`tool.specs.json` is regenerated and committed by hand because
+`generate-tool-specs.yml` is gated on
+`head.repo.full_name == github.repository` and does not run for fork PRs.
+
+A live check against the production MCP server adopted 26 filter fields and
+returned results.

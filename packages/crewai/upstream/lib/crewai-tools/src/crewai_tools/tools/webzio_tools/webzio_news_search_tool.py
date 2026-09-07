@@ -1,5 +1,8 @@
+"""Webz.io news search tool backed by the hosted News Search MCP server."""
+
 from __future__ import annotations
 
+import logging
 import os
 from types import TracebackType
 from typing import Any
@@ -9,147 +12,185 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from crewai_tools.adapters.mcp_adapter import MCPServerAdapter
 
+
+logger = logging.getLogger(__name__)
+
 DEFAULT_MCP_URL = "https://news-search-mcp.webz.io/mcp"
-TOKEN_ENV_NAME = "WEBZ_API_TOKEN"
-MCP_URL_ENV_NAME = "WEBZ_MCP_URL"
-PREFERRED_TOOL_NAME = "news_search_by_webz"
 MCP_TRANSPORT = "streamable-http"
-
-
-class WebzConfigError(ValueError):
-    """Raised when the Webz MCP client cannot be configured or loaded."""
-
-
-def resolve_api_token(api_token: str | None = None) -> str:
-    token = (api_token or os.getenv(TOKEN_ENV_NAME) or "").strip()
-    if not token:
-        raise WebzConfigError(
-            f"missing Webz API token. set {TOKEN_ENV_NAME} or pass api_token."
-        )
-    return token
-
-
-def resolve_mcp_url(mcp_url: str | None = None) -> str:
-    url = (mcp_url or os.getenv(MCP_URL_ENV_NAME) or DEFAULT_MCP_URL).strip()
-    if not url:
-        raise WebzConfigError("missing MCP url.")
-    return url.rstrip("/")
-
-
-def build_server_params(
-    api_token: str | None = None,
-    *,
-    mcp_url: str | None = None,
-) -> dict[str, Any]:
-    token = resolve_api_token(api_token)
-    url = resolve_mcp_url(mcp_url)
-    return {
-        "url": url,
-        "transport": MCP_TRANSPORT,
-        "headers": {"Authorization": f"Bearer {token}"},
-    }
-
-
-def pick_news_search_tool(tools: list[BaseTool]) -> BaseTool:
-    if not tools:
-        raise WebzConfigError("MCP server returned no tools.")
-    for tool in tools:
-        if tool.name == PREFERRED_TOOL_NAME:
-            return tool
-    if len(tools) == 1:
-        return tools[0]
-    names = ", ".join(tool.name for tool in tools)
-    raise WebzConfigError(
-        f"MCP server did not expose {PREFERRED_TOOL_NAME}. available tools: {names}"
-    )
+MCP_TOOL_NAME = "news_search_by_webz"
+AUTH_ENV_VAR = "WEBZ_API_TOKEN"
+MCP_URL_ENV_VAR = "WEBZ_MCP_URL"
 
 
 class WebzioNewsSearchToolSchema(BaseModel):
-    """Minimal static schema; replaced at init with the live MCP schema."""
+    """Fallback arguments, used until the live MCP schema has been fetched.
+
+    Extra keys are allowed so that server-side filters still reach Webz.io when
+    the tool is running on this fallback; the MCP server validates them.
+    """
 
     model_config = ConfigDict(extra="allow")
 
-    query: str = Field(..., description="Natural-language news search query")
+    query: str = Field(..., description="The news search query string.")
 
 
 class WebzioNewsSearchTool(BaseTool):
-    """Search global news with Webz.io via the hosted News Search MCP server.
+    """Search global news coverage with Webz.io over its hosted MCP server.
 
-    Filter fields are loaded live from MCP ``tools/list``. New server filters appear
-    automatically at runtime without republishing crewai-tools.
+    The argument schema is fetched from the MCP server when the tool is built,
+    so filters that Webz.io adds server-side become available to the agent
+    without a crewai-tools release. Construction does not fail when the server
+    is unreachable: the tool keeps :class:`WebzioNewsSearchToolSchema` and
+    retries the connection on the first call, which is where a missing token or
+    an unreachable server is reported.
 
-    Use as a context manager or call ``stop()`` when done to shut down the MCP session.
+    The MCP session stays open for reuse. Close it with :meth:`stop`, or use the
+    tool as a context manager.
+
+    Attributes:
+        api_token: The Webz.io API token.
+        mcp_url: The News Search MCP endpoint.
+        connect_timeout: Seconds allowed for the MCP connection.
     """
 
-    name: str = PREFERRED_TOOL_NAME
+    name: str = "Webzio News Search"
     description: str = (
-        "Search global news with Webz.io. Returns article excerpts with titles, "
-        "URLs, and metadata. Filter by language, country, date, sentiment, domain, "
-        "ticker, and more."
+        "Search global news articles and blog posts with Webz.io. Returns "
+        "matching articles with title, url, publication date, source, language "
+        "and text. Supports filtering by language, country, published date, "
+        "sentiment, site and more; pass only the filters you were asked for."
     )
     args_schema: type[BaseModel] = WebzioNewsSearchToolSchema
-    package_dependencies: list[str] = Field(default_factory=lambda: ["mcp"])
+    api_token: str | None = Field(
+        default_factory=lambda: os.getenv(AUTH_ENV_VAR),
+        description=(
+            "Webz.io API token. Falls back to the WEBZ_API_TOKEN environment "
+            "variable when not provided."
+        ),
+        json_schema_extra={"required": False},
+    )
+    mcp_url: str = Field(
+        default_factory=lambda: os.getenv(MCP_URL_ENV_VAR) or DEFAULT_MCP_URL,
+        description=(
+            "News Search MCP endpoint. Falls back to the WEBZ_MCP_URL "
+            "environment variable, then to the hosted endpoint."
+        ),
+        json_schema_extra={"required": False},
+    )
+    connect_timeout: int = Field(
+        default=30,
+        description="Seconds to wait for the MCP server connection.",
+    )
+    package_dependencies: list[str] = Field(default_factory=lambda: ["mcp", "mcpadapt"])
     env_vars: list[EnvVar] = Field(
         default_factory=lambda: [
             EnvVar(
-                name=TOKEN_ENV_NAME,
-                description="Webz.io API token from the dashboard",
+                name=AUTH_ENV_VAR,
+                description="API token for the Webz.io News API",
                 required=True,
             ),
             EnvVar(
-                name=MCP_URL_ENV_NAME,
-                description="Override MCP endpoint for testing",
+                name=MCP_URL_ENV_VAR,
+                description="Override for the Webz.io News Search MCP endpoint",
                 required=False,
             ),
         ]
     )
 
     _adapter: MCPServerAdapter | None = PrivateAttr(default=None)
-    _live_tool: BaseTool | None = PrivateAttr(default=None)
+    _mcp_tool: BaseTool | None = PrivateAttr(default=None)
 
-    def __init__(
-        self,
-        api_token: str | None = None,
-        *,
-        mcp_url: str | None = None,
-        connect_timeout: int = 30,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, **kwargs: Any) -> None:
+        """Build the tool and try to adopt the live MCP argument schema.
+
+        Args:
+            **kwargs: Field overrides, such as ``api_token`` or ``mcp_url``.
+        """
         super().__init__(**kwargs)
-        self._adapter = MCPServerAdapter(
-            build_server_params(api_token, mcp_url=mcp_url),
-            PREFERRED_TOOL_NAME,
-            connect_timeout=connect_timeout,
-        )
-        self._live_tool = pick_news_search_tool(list(self._adapter.tools))
-        self.args_schema = self._live_tool.args_schema
-        self.description = self._live_tool.description
+        try:
+            self._connect()
+        except Exception as e:
+            logger.debug(f"Deferring the Webz.io MCP connection: {e}")
 
-    @property
-    def arg_names(self) -> list[str]:
-        """Live argument names from the MCP tool schema."""
-        return list(self.args_schema.model_fields.keys())
+    def _connect(self) -> BaseTool:
+        """Open the MCP session, if needed, and adopt the live argument schema.
+
+        Returns:
+            The MCP-backed tool that runs the search.
+
+        Raises:
+            ValueError: If the API token is missing, or if the server does not
+                expose the news search tool.
+        """
+        if self._mcp_tool is not None:
+            return self._mcp_tool
+
+        token = (self.api_token or "").strip()
+        if not token:
+            raise ValueError(
+                f"Webz.io API token is missing. Set {AUTH_ENV_VAR} or pass "
+                f"api_token=... to {type(self).__name__}."
+            )
+
+        url = self.mcp_url.strip().rstrip("/")
+        self._adapter = MCPServerAdapter(
+            {
+                "url": url,
+                "transport": MCP_TRANSPORT,
+                "headers": {"Authorization": f"Bearer {token}"},
+            },
+            MCP_TOOL_NAME,
+            connect_timeout=self.connect_timeout,
+        )
+
+        mcp_tools = list(self._adapter.tools)
+        if not mcp_tools:
+            self.stop()
+            raise ValueError(
+                f"The MCP server at {url} did not expose a {MCP_TOOL_NAME} tool."
+            )
+
+        self._mcp_tool = mcp_tools[0]
+        self.args_schema = self._mcp_tool.args_schema
+        return self._mcp_tool
 
     def _run(self, **kwargs: Any) -> str:
-        if self._live_tool is None:
-            raise WebzConfigError("MCP news search tool is not initialized.")
-        result = self._live_tool._run(**kwargs)
-        return str(result)
+        """Run a news search against Webz.io.
+
+        Args:
+            **kwargs: Search arguments accepted by the live MCP schema, always
+                including ``query``.
+
+        Returns:
+            The search results as returned by the MCP server.
+        """
+        return str(self._connect()._run(**kwargs))
 
     def stop(self) -> None:
-        """Stop the underlying MCP server connection."""
-        if self._adapter is not None:
-            self._adapter.stop()
-            self._adapter = None
-            self._live_tool = None
+        """Close the MCP session. A later call reconnects."""
+        adapter, self._adapter, self._mcp_tool = self._adapter, None, None
+        if adapter is not None:
+            adapter.stop()
 
     def __enter__(self) -> WebzioNewsSearchTool:
+        """Return the tool itself; the MCP session is already open.
+
+        Returns:
+            This tool.
+        """
         return self
 
     def __exit__(
         self,
         exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
+        """Close the MCP session on leaving the context.
+
+        Args:
+            exc_type: The exception type raised in the block, if any.
+            exc_value: The exception raised in the block, if any.
+            traceback: The traceback of that exception, if any.
+        """
         self.stop()
