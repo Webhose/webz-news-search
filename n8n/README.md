@@ -58,15 +58,18 @@ Ready-made workflows are in [`templates/`](templates). In n8n, use **Import from
 | [`news-research-agent.json`](templates/news-research-agent.json) | Chat interface for interactive news research, with conversation memory |
 | [`news-to-sheet.json`](templates/news-to-sheet.json) | Manual or scheduled search with the community node, appending structured article rows to Google Sheets |
 
-After importing, open the **Settings** node and change the search query, ticker, or channel there. Everything you would normally want to adjust lives in that one node, so you should not need to touch the agent prompts.
+Each workflow opens with a yellow sticky note holding the full description, plus a grey note over every step, so the canvas explains itself once imported.
+
+After importing, open the settings node — **Digest settings**, **Monitor settings**, or **Search settings** — and change the search query, ticker, or channel there. Everything you would normally want to adjust lives in that one node, so you should not need to touch the agent prompts. The Google Sheets template is the one exception: pick the destination spreadsheet and tab on the **Append articles to sheet** node, and give the tab the column headers `title`, `url`, `published`, `score`, `excerpt`, and `query`.
 
 Then add credentials. Templates never ship credentials, so these fields arrive empty by design:
 
 | Node | Credential |
 | --- | --- |
-| Webz.io News Search (community node) | **Webz.io News Search API**, with your Webz.io API token |
-| Webz.io News Search (MCP Client Tool) | **Bearer Auth**, with your Webz.io API token |
+| Search Webz.io news (community node) | **Webz.io News Search API**, with your Webz.io API token |
+| Webz.io news search (MCP Client Tool) | **Bearer Auth**, with your Webz.io API token |
 | OpenAI Chat Model | Your OpenAI key, or replace the node with any other tool-calling model |
+| Append articles to sheet (Sheets template only) | **Google Sheets OAuth2** |
 | Slack (digest and ticker templates only) | **Slack API** with a bot token |
 
 For Slack, the bot token needs the `chat:write` scope to post and `channels:read` to resolve the channel name (`groups:read` as well for a private channel). Then invite the bot to the channel with `/invite @YourApp` — correct scopes with an uninvited bot returns `not_in_channel`, which looks like an auth failure but isn't.

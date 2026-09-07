@@ -169,13 +169,15 @@ Four workflows are available in [`n8n/templates`](https://github.com/Webhose/web
 
 ### Configuring a template
 
-Every template keeps its adjustable values in one **Settings** node, so you should not need to touch the agent prompts.
+Every template keeps its adjustable values in one settings node, so you should not need to touch the agent prompts.
 
-| Template | Settings fields |
-| --- | --- |
-| `news-to-sheet.json` | `query`, `limit`, `days`, `sheetId`, `sheetName` |
-| `daily-news-digest-slack.json` | `searchQuery`, `lookbackDays`, `resultCount`, `slackChannel` |
-| `ticker-monitor.json` | `ticker`, `lookbackDays`, `resultCount`, `slackChannel` |
+| Template | Settings node | Fields |
+| --- | --- | --- |
+| `news-to-sheet.json` | **Search settings** | `query`, `articleCount`, `lookbackDays` |
+| `daily-news-digest-slack.json` | **Digest settings** | `searchQuery`, `lookbackDays`, `articleCount`, `slackChannel` |
+| `ticker-monitor.json` | **Monitor settings** | `ticker`, `lookbackDays`, `articleCount`, `slackChannel` |
+
+`news-to-sheet.json` picks the destination spreadsheet on the Google Sheets node itself rather than from the settings node. Choose your spreadsheet and tab there, and give the tab the column headers `title`, `url`, `published`, `score`, `excerpt`, and `query`.
 
 ### Adding credentials
 
@@ -183,10 +185,10 @@ Templates never ship credentials, so these fields arrive empty by design.
 
 | Node | Credential |
 | --- | --- |
-| Webz.io News Search (community node) | **Webz.io News Search API** with your Webz.io token |
-| Webz.io News Search (MCP Client Tool) | **Bearer Auth** with your Webz.io token |
+| Search Webz.io news (community node) | **Webz.io News Search API** with your Webz.io token |
+| Webz.io news search (MCP Client Tool) | **Bearer Auth** with your Webz.io token |
 | OpenAI Chat Model | Your OpenAI key, or swap the node for any other tool-calling model |
-| Append rows | Google Sheets OAuth2 |
+| Append articles to sheet | Google Sheets OAuth2 |
 | Slack | **Slack API** with a bot token |
 
 The three agent templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenAI-compatible provider and the rest of the workflow is unchanged.
