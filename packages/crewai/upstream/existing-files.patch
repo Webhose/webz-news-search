@@ -1,296 +1,408 @@
-commit d00d9d4193062981a2973a654e05ddead69bdffc
+commit 0cdbbe4551446a58d11a4a1248c2500824e86596
 Author: ShakedDegani <shaked@webz.io>
-Date:   Mon Sep 7 13:07:01 2026 +0300
+Date:   Mon Sep 7 13:35:34 2026 +0300
 
-    feat(tools): add WebzioNewsSearchTool for Webz.io news search
+    fix(tools): guard the Webzio MCP session lifecycle and require HTTPS
     
-    Adds a news search tool backed by Webz.io's hosted News Search MCP
-    server, so agents can search global news articles and blog posts and
-    get back title, url, publication date, source, language and text.
+    Serialize _connect() and stop() with a threading.Lock, build through a
+    local MCPServerAdapter, and close it on handshake failure so concurrent
+    searches cannot leak duplicate MCP sessions.
     
-    The tool fetches its argument schema from the MCP server on
-    construction, which keeps the ~26 server-side filters (language,
-    country, published date, sentiment, domain, ...) available to agents
-    without a crewai-tools release whenever Webz.io adds one. Construction
-    falls back to a query-only schema and retries on the first search when
-    the server is unreachable or the token is missing, so building the tool
-    stays safe at import time and under pytest's --block-network.
+    Reject non-HTTPS MCP endpoints before sending the Bearer token. Update
+    the docs examples in all four locales to use the context manager for
+    exception-safe cleanup, add docstrings to the tests, and cover the new
+    behavior with concurrency and cleartext-endpoint tests.
 
-diff --git a/docs/docs.json b/docs/docs.json
-index 865947d..3a096c1 100644
---- a/docs/docs.json
-+++ b/docs/docs.json
-@@ -274,7 +274,8 @@
-                           "edge/en/tools/search-research/serpapi-googlesearchtool",
-                           "edge/en/tools/search-research/serpapi-googleshoppingtool",
-                           "edge/en/tools/search-research/databricks-query-tool",
--                          "edge/en/tools/search-research/youai-search"
-+                          "edge/en/tools/search-research/youai-search",
-+                          "edge/en/tools/search-research/webzionewssearchtool"
-                         ]
-                       },
-                       {
-@@ -14733,7 +14734,8 @@
-                           "edge/pt-BR/tools/search-research/websitesearchtool",
-                           "edge/pt-BR/tools/search-research/codedocssearchtool",
-                           "edge/pt-BR/tools/search-research/youtubechannelsearchtool",
--                          "edge/pt-BR/tools/search-research/youtubevideosearchtool"
-+                          "edge/pt-BR/tools/search-research/youtubevideosearchtool",
-+                          "edge/pt-BR/tools/search-research/webzionewssearchtool"
-                         ]
-                       },
-                       {
-@@ -28188,7 +28190,8 @@
-                           "edge/ko/tools/search-research/arxivpapertool",
-                           "edge/ko/tools/search-research/serpapi-googlesearchtool",
-                           "edge/ko/tools/search-research/serpapi-googleshoppingtool",
--                          "edge/ko/tools/search-research/databricks-query-tool"
-+                          "edge/ko/tools/search-research/databricks-query-tool",
-+                          "edge/ko/tools/search-research/webzionewssearchtool"
-                         ]
-                       },
-                       {
-@@ -42089,7 +42092,8 @@
-                           "edge/ar/tools/search-research/arxivpapertool",
-                           "edge/ar/tools/search-research/serpapi-googlesearchtool",
-                           "edge/ar/tools/search-research/serpapi-googleshoppingtool",
--                          "edge/ar/tools/search-research/databricks-query-tool"
-+                          "edge/ar/tools/search-research/databricks-query-tool",
-+                          "edge/ar/tools/search-research/webzionewssearchtool"
-                         ]
-                       },
-                       {
-diff --git a/docs/edge/ar/tools/search-research/overview.mdx b/docs/edge/ar/tools/search-research/overview.mdx
-index 6b73d12..0980363 100644
---- a/docs/edge/ar/tools/search-research/overview.mdx
-+++ b/docs/edge/ar/tools/search-research/overview.mdx
-@@ -65,6 +65,10 @@ mode: "wide"
-   <Card title="تسوق Google عبر SerpApi" icon="cart-shopping" href="/ar/tools/search-research/serpapi-googleshoppingtool">
-     استعلامات Google Shopping عبر SerpApi.
-   </Card>
-+
-+  <Card title="أداة بحث أخبار Webzio" icon="newspaper" href="/ar/tools/search-research/webzionewssearchtool">
-+    ابحث في المقالات الإخبارية ومنشورات المدونات من مختلف أنحاء العالم باستخدام Webz.io.
-+  </Card>
- </CardGroup>
+diff --git a/docs/edge/ar/tools/search-research/webzionewssearchtool.mdx b/docs/edge/ar/tools/search-research/webzionewssearchtool.mdx
+index 2ce7d87..ea80a95 100644
+--- a/docs/edge/ar/tools/search-research/webzionewssearchtool.mdx
++++ b/docs/edge/ar/tools/search-research/webzionewssearchtool.mdx
+@@ -33,31 +33,29 @@ export WEBZ_API_TOKEN='your_webz_api_token'
+ from crewai import Agent, Crew, Task
+ from crewai_tools import WebzioNewsSearchTool
  
- ## **حالات الاستخدام الشائعة**
-diff --git a/docs/edge/en/tools/search-research/overview.mdx b/docs/edge/en/tools/search-research/overview.mdx
-index 6fdd841..6107973 100644
---- a/docs/edge/en/tools/search-research/overview.mdx
-+++ b/docs/edge/en/tools/search-research/overview.mdx
-@@ -73,6 +73,10 @@ These tools enable your agents to search the web, research topics, and find info
-   <Card title="SerpApi Google Shopping" icon="cart-shopping" href="/en/tools/search-research/serpapi-googleshoppingtool">
-     Google Shopping queries via SerpApi.
-   </Card>
-+
-+  <Card title="Webzio News Search Tool" icon="newspaper" href="/en/tools/search-research/webzionewssearchtool">
-+    Search global news articles and blog posts with Webz.io.
-+  </Card>
- </CardGroup>
+-news_tool = WebzioNewsSearchTool()
++with WebzioNewsSearchTool() as news_tool:
++    analyst = Agent(
++        role="News Analyst",
++        goal="Report what the press is saying about a topic",
++        backstory=(
++            "A media analyst who searches the news and summarizes coverage. "
++            "Search with only the filters you were asked for, so that broad "
++            "queries stay broad."
++        ),
++        tools=[news_tool],
++        verbose=True,
++    )
  
- ## **Common Use Cases**
-diff --git a/docs/edge/ko/tools/search-research/overview.mdx b/docs/edge/ko/tools/search-research/overview.mdx
-index ff59c38..b6d3f46 100644
---- a/docs/edge/ko/tools/search-research/overview.mdx
-+++ b/docs/edge/ko/tools/search-research/overview.mdx
-@@ -65,6 +65,10 @@ mode: "wide"
-   <Card title="SerpApi Google Shopping" icon="cart-shopping" href="/ko/tools/search-research/serpapi-googleshoppingtool">
-     SerpApi를 통한 Google 쇼핑 쿼리.
-   </Card>
-+
-+  <Card title="Webzio 뉴스 검색 도구" icon="newspaper" href="/ko/tools/search-research/webzionewssearchtool">
-+    Webz.io로 전 세계 뉴스 기사와 블로그 게시물을 검색합니다.
-+  </Card>
- </CardGroup>
+-analyst = Agent(
+-    role="News Analyst",
+-    goal="Report what the press is saying about a topic",
+-    backstory=(
+-        "A media analyst who searches the news and summarizes coverage. "
+-        "Search with only the filters you were asked for, so that broad "
+-        "queries stay broad."
+-    ),
+-    tools=[news_tool],
+-    verbose=True,
+-)
++    coverage_task = Task(
++        description="Find recent news coverage about AI regulation in the European Union.",
++        expected_output="A summary of the main themes, each with source URLs.",
++        agent=analyst,
++    )
  
- ## **일반적인 사용 사례**
-diff --git a/docs/edge/pt-BR/tools/search-research/overview.mdx b/docs/edge/pt-BR/tools/search-research/overview.mdx
-index bece435..10e1565 100644
---- a/docs/edge/pt-BR/tools/search-research/overview.mdx
-+++ b/docs/edge/pt-BR/tools/search-research/overview.mdx
-@@ -45,6 +45,10 @@ Essas ferramentas permitem que seus agentes pesquisem na web, explorem tópicos
-   <Card title="YouTube Video Search" icon="play" href="/pt-BR/tools/search-research/youtubevideosearchtool">
-     Encontre e analise vídeos do YouTube por assunto, palavra-chave ou critério.
-   </Card>
-+
-+  <Card title="Ferramenta de Busca de Notícias Webzio" icon="newspaper" href="/pt-BR/tools/search-research/webzionewssearchtool">
-+    Busque artigos de notícias e posts de blog do mundo inteiro com a Webz.io.
-+  </Card>
- </CardGroup>
+-coverage_task = Task(
+-    description="Find recent news coverage about AI regulation in the European Union.",
+-    expected_output="A summary of the main themes, each with source URLs.",
+-    agent=analyst,
+-)
++    crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
++    result = crew.kickoff()
  
- ## **Casos de Uso Comuns**
-diff --git a/lib/crewai-tools/src/crewai_tools/__init__.py b/lib/crewai-tools/src/crewai_tools/__init__.py
-index bb8a946..f29d35c 100644
---- a/lib/crewai-tools/src/crewai_tools/__init__.py
-+++ b/lib/crewai-tools/src/crewai_tools/__init__.py
-@@ -214,6 +214,9 @@ from crewai_tools.tools.vision_tool.vision_tool import VisionTool
- from crewai_tools.tools.wait_tool.wait_tool import WaitTool
- from crewai_tools.tools.weaviate_tool.vector_search import WeaviateVectorSearchTool
- from crewai_tools.tools.website_search.website_search_tool import WebsiteSearchTool
-+from crewai_tools.tools.webzio_tools.webzio_news_search_tool import (
-+    WebzioNewsSearchTool,
-+)
- from crewai_tools.tools.xml_search_tool.xml_search_tool import XMLSearchTool
- from crewai_tools.tools.youtube_channel_search_tool.youtube_channel_search_tool import (
-     YoutubeChannelSearchTool,
-@@ -333,6 +336,7 @@ __all__ = [
-     "WaitTool",
-     "WeaviateVectorSearchTool",
-     "WebsiteSearchTool",
-+    "WebzioNewsSearchTool",
-     "XMLSearchTool",
-     "YoutubeChannelSearchTool",
-     "YoutubeVideoSearchTool",
-diff --git a/lib/crewai-tools/src/crewai_tools/tools/__init__.py b/lib/crewai-tools/src/crewai_tools/tools/__init__.py
-index 2653490..12b12b7 100644
---- a/lib/crewai-tools/src/crewai_tools/tools/__init__.py
-+++ b/lib/crewai-tools/src/crewai_tools/tools/__init__.py
-@@ -201,6 +201,9 @@ from crewai_tools.tools.vision_tool.vision_tool import VisionTool
- from crewai_tools.tools.wait_tool.wait_tool import WaitTool
- from crewai_tools.tools.weaviate_tool.vector_search import WeaviateVectorSearchTool
- from crewai_tools.tools.website_search.website_search_tool import WebsiteSearchTool
-+from crewai_tools.tools.webzio_tools.webzio_news_search_tool import (
-+    WebzioNewsSearchTool,
-+)
- from crewai_tools.tools.xml_search_tool.xml_search_tool import XMLSearchTool
- from crewai_tools.tools.youtube_channel_search_tool.youtube_channel_search_tool import (
-     YoutubeChannelSearchTool,
-@@ -316,6 +319,7 @@ __all__ = [
-     "WaitTool",
-     "WeaviateVectorSearchTool",
-     "WebsiteSearchTool",
-+    "WebzioNewsSearchTool",
-     "XMLSearchTool",
-     "YoutubeChannelSearchTool",
-     "YoutubeVideoSearchTool",
+-crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
+-result = crew.kickoff()
+ print(result)
+-
+-news_tool.stop()
+ ```
+ 
+ ## خيارات التهيئة
+@@ -73,15 +71,14 @@ news_tool.stop()
+ `query` هي وسيطة البحث المطلوبة الوحيدة. تُقرأ بقية المُرشِّحات من خادم MCP، لذا فإن القائمة المُعتمدة هي ما يستطيع رمزك الوصول إليه — يمكنك استعراضها عبر `news_tool.args_schema.model_fields`. تشمل المُرشِّحات المتاحة عادةً لغة النشر والبلد، ونطاق تاريخ النشر، والمشاعر، وموقع المصدر أو نطاقه.
+ 
+ ```python
+-news_tool = WebzioNewsSearchTool()
+-
+-print(news_tool.args_schema.model_fields.keys())
++with WebzioNewsSearchTool() as news_tool:
++    print(news_tool.args_schema.model_fields.keys())
+ 
+-results = news_tool.run(
+-    query="ai regulation",
+-    language="english",
+-)
+-print(results)
++    results = news_tool.run(
++        query="ai regulation",
++        language="english",
++    )
++    print(results)
+ ```
+ 
+ <Note>
+@@ -90,13 +87,15 @@ print(results)
+ 
+ ## إدارة الاتصال
+ 
+-تُبقي الأداة جلسة MCP واحدة مفتوحة وتعيد استخدامها بين عمليات البحث. أغلقها باستخدام `stop()` عند انتهاء الـ crew، أو استخدم الأداة كمدير سياق:
++استخدم الأداة كمدير سياق حتى تُغلق جلسة MCP حتى عندما يرفع الإعداد أو `crew.kickoff()` استثناءً:
+ 
+ ```python
+ with WebzioNewsSearchTool() as news_tool:
+     print(news_tool.run(query="renewable energy investment"))
+ ```
+ 
++تُبقي الأداة جلسة MCP واحدة مفتوحة وتعيد استخدامها بين عمليات البحث داخل الكتلة. استدعِ `stop()` يدويًا عندما لا تستطيع استخدام مدير سياق.
++
+ لا يفشل إنشاء الأداة أبدًا بسبب خادم غير قابل للوصول أو رمز مفقود. عندما لا يتحقق الاتصال، تعود الأداة إلى مخطط يحتوي على `query` فقط وتعيد المحاولة عند أول عملية بحث، وهناك يُبلَّغ عن الخطأ. هذا يجعل إنشاء الأداة آمنًا وقت الاستيراد وفي مجموعات الاختبار غير المتصلة بالشبكة.
+ 
+ ## استخدام Webz.io مباشرةً عبر MCP
+diff --git a/docs/edge/en/tools/search-research/webzionewssearchtool.mdx b/docs/edge/en/tools/search-research/webzionewssearchtool.mdx
+index 61fb102..a86cc8f 100644
+--- a/docs/edge/en/tools/search-research/webzionewssearchtool.mdx
++++ b/docs/edge/en/tools/search-research/webzionewssearchtool.mdx
+@@ -33,31 +33,29 @@ Get a token from the [Webz.io dashboard](https://dashboard.webz.io/).
+ from crewai import Agent, Crew, Task
+ from crewai_tools import WebzioNewsSearchTool
+ 
+-news_tool = WebzioNewsSearchTool()
++with WebzioNewsSearchTool() as news_tool:
++    analyst = Agent(
++        role="News Analyst",
++        goal="Report what the press is saying about a topic",
++        backstory=(
++            "A media analyst who searches the news and summarizes coverage. "
++            "Search with only the filters you were asked for, so that broad "
++            "queries stay broad."
++        ),
++        tools=[news_tool],
++        verbose=True,
++    )
+ 
+-analyst = Agent(
+-    role="News Analyst",
+-    goal="Report what the press is saying about a topic",
+-    backstory=(
+-        "A media analyst who searches the news and summarizes coverage. "
+-        "Search with only the filters you were asked for, so that broad "
+-        "queries stay broad."
+-    ),
+-    tools=[news_tool],
+-    verbose=True,
+-)
++    coverage_task = Task(
++        description="Find recent news coverage about AI regulation in the European Union.",
++        expected_output="A summary of the main themes, each with source URLs.",
++        agent=analyst,
++    )
+ 
+-coverage_task = Task(
+-    description="Find recent news coverage about AI regulation in the European Union.",
+-    expected_output="A summary of the main themes, each with source URLs.",
+-    agent=analyst,
+-)
++    crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
++    result = crew.kickoff()
+ 
+-crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
+-result = crew.kickoff()
+ print(result)
+-
+-news_tool.stop()
+ ```
+ 
+ ## Configuration Options
+@@ -73,15 +71,14 @@ news_tool.stop()
+ `query` is the only required search argument. The remaining filters are read from the MCP server, so the authoritative list is whatever your token has access to — inspect it with `news_tool.args_schema.model_fields`. Commonly available filters include the publication language and country, a published-date range, sentiment, and the source site or domain.
+ 
+ ```python
+-news_tool = WebzioNewsSearchTool()
+-
+-print(news_tool.args_schema.model_fields.keys())
++with WebzioNewsSearchTool() as news_tool:
++    print(news_tool.args_schema.model_fields.keys())
+ 
+-results = news_tool.run(
+-    query="ai regulation",
+-    language="english",
+-)
+-print(results)
++    results = news_tool.run(
++        query="ai regulation",
++        language="english",
++    )
++    print(results)
+ ```
+ 
+ <Note>
+@@ -90,13 +87,15 @@ Agents work best with a short filter list. A broad query plus one or two filters
+ 
+ ## Managing the Connection
+ 
+-The tool keeps one MCP session open and reuses it across searches. Close it with `stop()` when your crew is done, or use the tool as a context manager:
++Use the tool as a context manager so the MCP session closes even when setup or `crew.kickoff()` raises:
+ 
+ ```python
+ with WebzioNewsSearchTool() as news_tool:
+     print(news_tool.run(query="renewable energy investment"))
+ ```
+ 
++The tool keeps one MCP session open and reuses it across searches inside the block. Call `stop()` manually when you cannot use a context manager.
++
+ Creating the tool never fails because of an unreachable server or a missing token. When the connection cannot be made, the tool falls back to a `query`-only schema and retries on the first search, which is where the error is reported. This keeps tool construction safe at import time and in offline test suites.
+ 
+ ## Using Webz.io via MCP Directly
+diff --git a/docs/edge/ko/tools/search-research/webzionewssearchtool.mdx b/docs/edge/ko/tools/search-research/webzionewssearchtool.mdx
+index 4010aeb..ae909f2 100644
+--- a/docs/edge/ko/tools/search-research/webzionewssearchtool.mdx
++++ b/docs/edge/ko/tools/search-research/webzionewssearchtool.mdx
+@@ -33,31 +33,29 @@ export WEBZ_API_TOKEN='your_webz_api_token'
+ from crewai import Agent, Crew, Task
+ from crewai_tools import WebzioNewsSearchTool
+ 
+-news_tool = WebzioNewsSearchTool()
++with WebzioNewsSearchTool() as news_tool:
++    analyst = Agent(
++        role="News Analyst",
++        goal="Report what the press is saying about a topic",
++        backstory=(
++            "A media analyst who searches the news and summarizes coverage. "
++            "Search with only the filters you were asked for, so that broad "
++            "queries stay broad."
++        ),
++        tools=[news_tool],
++        verbose=True,
++    )
+ 
+-analyst = Agent(
+-    role="News Analyst",
+-    goal="Report what the press is saying about a topic",
+-    backstory=(
+-        "A media analyst who searches the news and summarizes coverage. "
+-        "Search with only the filters you were asked for, so that broad "
+-        "queries stay broad."
+-    ),
+-    tools=[news_tool],
+-    verbose=True,
+-)
++    coverage_task = Task(
++        description="Find recent news coverage about AI regulation in the European Union.",
++        expected_output="A summary of the main themes, each with source URLs.",
++        agent=analyst,
++    )
+ 
+-coverage_task = Task(
+-    description="Find recent news coverage about AI regulation in the European Union.",
+-    expected_output="A summary of the main themes, each with source URLs.",
+-    agent=analyst,
+-)
++    crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
++    result = crew.kickoff()
+ 
+-crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
+-result = crew.kickoff()
+ print(result)
+-
+-news_tool.stop()
+ ```
+ 
+ ## 구성 옵션
+@@ -73,15 +71,14 @@ news_tool.stop()
+ 필수 검색 인자는 `query` 하나입니다. 나머지 필터는 MCP 서버에서 읽어오므로, 실제 목록은 토큰이 접근할 수 있는 필터에 따라 정해집니다 — `news_tool.args_schema.model_fields`로 확인하세요. 일반적으로 발행 언어와 국가, 발행일 범위, 감정, 소스 사이트 또는 도메인 필터를 사용할 수 있습니다.
+ 
+ ```python
+-news_tool = WebzioNewsSearchTool()
+-
+-print(news_tool.args_schema.model_fields.keys())
++with WebzioNewsSearchTool() as news_tool:
++    print(news_tool.args_schema.model_fields.keys())
+ 
+-results = news_tool.run(
+-    query="ai regulation",
+-    language="english",
+-)
+-print(results)
++    results = news_tool.run(
++        query="ai regulation",
++        language="english",
++    )
++    print(results)
+ ```
+ 
+ <Note>
+@@ -90,13 +87,15 @@ print(results)
+ 
+ ## 연결 관리
+ 
+-이 도구는 하나의 MCP 세션을 열어 두고 여러 검색에 재사용합니다. Crew 작업이 끝나면 `stop()`으로 세션을 닫거나, 도구를 컨텍스트 매니저로 사용하세요:
++설정이나 `crew.kickoff()`에서 예외가 발생해도 MCP 세션이 닫히도록 도구를 컨텍스트 매니저로 사용하세요:
+ 
+ ```python
+ with WebzioNewsSearchTool() as news_tool:
+     print(news_tool.run(query="renewable energy investment"))
+ ```
+ 
++이 도구는 블록 안에서 하나의 MCP 세션을 열어 두고 여러 검색에 재사용합니다. 컨텍스트 매니저를 쓸 수 없을 때는 `stop()`을 직접 호출하세요.
++
+ 서버에 연결할 수 없거나 토큰이 없어도 도구 생성은 실패하지 않습니다. 연결할 수 없을 때는 `query`만 있는 스키마로 대체하고 첫 검색에서 다시 시도하며, 오류는 그 시점에 보고됩니다. 덕분에 import 시점이나 오프라인 테스트 스위트에서도 도구를 안전하게 생성할 수 있습니다.
+ 
+ ## MCP로 Webz.io 직접 사용하기
+diff --git a/docs/edge/pt-BR/tools/search-research/webzionewssearchtool.mdx b/docs/edge/pt-BR/tools/search-research/webzionewssearchtool.mdx
+index 7fd7d98..fb7c4c7 100644
+--- a/docs/edge/pt-BR/tools/search-research/webzionewssearchtool.mdx
++++ b/docs/edge/pt-BR/tools/search-research/webzionewssearchtool.mdx
+@@ -33,31 +33,29 @@ Obtenha um token no [painel da Webz.io](https://dashboard.webz.io/).
+ from crewai import Agent, Crew, Task
+ from crewai_tools import WebzioNewsSearchTool
+ 
+-news_tool = WebzioNewsSearchTool()
++with WebzioNewsSearchTool() as news_tool:
++    analyst = Agent(
++        role="News Analyst",
++        goal="Report what the press is saying about a topic",
++        backstory=(
++            "A media analyst who searches the news and summarizes coverage. "
++            "Search with only the filters you were asked for, so that broad "
++            "queries stay broad."
++        ),
++        tools=[news_tool],
++        verbose=True,
++    )
+ 
+-analyst = Agent(
+-    role="News Analyst",
+-    goal="Report what the press is saying about a topic",
+-    backstory=(
+-        "A media analyst who searches the news and summarizes coverage. "
+-        "Search with only the filters you were asked for, so that broad "
+-        "queries stay broad."
+-    ),
+-    tools=[news_tool],
+-    verbose=True,
+-)
++    coverage_task = Task(
++        description="Find recent news coverage about AI regulation in the European Union.",
++        expected_output="A summary of the main themes, each with source URLs.",
++        agent=analyst,
++    )
+ 
+-coverage_task = Task(
+-    description="Find recent news coverage about AI regulation in the European Union.",
+-    expected_output="A summary of the main themes, each with source URLs.",
+-    agent=analyst,
+-)
++    crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
++    result = crew.kickoff()
+ 
+-crew = Crew(agents=[analyst], tasks=[coverage_task], verbose=True)
+-result = crew.kickoff()
+ print(result)
+-
+-news_tool.stop()
+ ```
+ 
+ ## Opções de Configuração
+@@ -73,15 +71,14 @@ A `WebzioNewsSearchTool` aceita os seguintes parâmetros:
+ `query` é o único argumento de busca obrigatório. Os demais filtros são lidos do servidor MCP, então a lista autoritativa é aquela à qual o seu token tem acesso — inspecione-a com `news_tool.args_schema.model_fields`. Filtros comumente disponíveis incluem o idioma e o país de publicação, um intervalo de datas de publicação, o sentimento e o site ou domínio da fonte.
+ 
+ ```python
+-news_tool = WebzioNewsSearchTool()
+-
+-print(news_tool.args_schema.model_fields.keys())
++with WebzioNewsSearchTool() as news_tool:
++    print(news_tool.args_schema.model_fields.keys())
+ 
+-results = news_tool.run(
+-    query="ai regulation",
+-    language="english",
+-)
+-print(results)
++    results = news_tool.run(
++        query="ai regulation",
++        language="english",
++    )
++    print(results)
+ ```
+ 
+ <Note>
+@@ -90,13 +87,15 @@ Os agentes funcionam melhor com uma lista curta de filtros. Uma consulta ampla c
+ 
+ ## Gerenciando a Conexão
+ 
+-A ferramenta mantém uma sessão MCP aberta e a reutiliza entre buscas. Encerre-a com `stop()` quando a sua crew terminar, ou use a ferramenta como gerenciador de contexto:
++Use a ferramenta como gerenciador de contexto para que a sessão MCP seja fechada mesmo quando a configuração ou `crew.kickoff()` lançar uma exceção:
+ 
+ ```python
+ with WebzioNewsSearchTool() as news_tool:
+     print(news_tool.run(query="renewable energy investment"))
+ ```
+ 
++A ferramenta mantém uma sessão MCP aberta e a reutiliza entre buscas dentro do bloco. Chame `stop()` manualmente quando não puder usar um gerenciador de contexto.
++
+ Criar a ferramenta nunca falha por causa de um servidor inacessível ou de um token ausente. Quando a conexão não pode ser feita, a ferramenta recorre a um schema com apenas `query` e tenta novamente na primeira busca, que é onde o erro é reportado. Isso mantém a criação da ferramenta segura em tempo de import e em suítes de teste offline.
+ 
+ ## Usando a Webz.io Diretamente via MCP
 diff --git a/lib/crewai-tools/tool.specs.json b/lib/crewai-tools/tool.specs.json
-index 2b614ba..9d0ae92 100644
+index 9d0ae92..c575bc5 100644
 --- a/lib/crewai-tools/tool.specs.json
 +++ b/lib/crewai-tools/tool.specs.json
-@@ -28419,6 +28419,125 @@
-         "type": "object"
-       }
-     },
-+    {
-+      "description": "Search global news articles and blog posts with Webz.io. Returns matching articles with title, url, publication date, source, language and text. Supports filtering by language, country, published date, sentiment, site and more; pass only the filters you were asked for.",
-+      "env_vars": [
-+        {
-+          "default": null,
-+          "description": "API token for the Webz.io News API",
-+          "name": "WEBZ_API_TOKEN",
-+          "required": true
-+        },
-+        {
-+          "default": null,
-+          "description": "Override for the Webz.io News Search MCP endpoint",
-+          "name": "WEBZ_MCP_URL",
-+          "required": false
-+        }
-+      ],
-+      "humanized_name": "Webzio News Search",
-+      "init_params_schema": {
-+        "$defs": {
-+          "EnvVar": {
-+            "properties": {
-+              "default": {
-+                "anyOf": [
-+                  {
-+                    "type": "string"
-+                  },
-+                  {
-+                    "type": "null"
-+                  }
-+                ],
-+                "default": null,
-+                "title": "Default"
-+              },
-+              "description": {
-+                "title": "Description",
-+                "type": "string"
-+              },
-+              "name": {
-+                "title": "Name",
-+                "type": "string"
-+              },
-+              "required": {
-+                "default": true,
-+                "title": "Required",
-+                "type": "boolean"
-+              }
-+            },
-+            "required": [
-+              "name",
-+              "description"
-+            ],
-+            "title": "EnvVar",
-+            "type": "object"
-+          },
-+          "ToolFailurePolicy": {
-+            "description": "How an agent reacts when one of its tools reports a failure.",
-+            "enum": [
-+              "ignore",
-+              "warn",
-+              "raise"
-+            ],
-+            "title": "ToolFailurePolicy",
-+            "type": "string"
-+          }
-+        },
-+        "description": "Search global news coverage with Webz.io over its hosted MCP server.\n\nThe argument schema is fetched from the MCP server when the tool is built,\nso filters that Webz.io adds server-side become available to the agent\nwithout a crewai-tools release. Construction does not fail when the server\nis unreachable: the tool keeps :class:`WebzioNewsSearchToolSchema` and\nretries the connection on the first call, which is where a missing token or\nan unreachable server is reported.\n\nThe MCP session stays open for reuse. Close it with :meth:`stop`, or use the\ntool as a context manager.\n\nAttributes:\n    api_token: The Webz.io API token.\n    mcp_url: The News Search MCP endpoint.\n    connect_timeout: Seconds allowed for the MCP connection.",
-+        "properties": {
-+          "api_token": {
-+            "anyOf": [
-+              {
-+                "type": "string"
-+              },
-+              {
-+                "type": "null"
-+              }
-+            ],
-+            "description": "Webz.io API token. Falls back to the WEBZ_API_TOKEN environment variable when not provided.",
-+            "required": false,
-+            "title": "Api Token"
-+          },
-+          "connect_timeout": {
-+            "default": 30,
-+            "description": "Seconds to wait for the MCP server connection.",
-+            "title": "Connect Timeout",
-+            "type": "integer"
-+          },
-+          "mcp_url": {
-+            "description": "News Search MCP endpoint. Falls back to the WEBZ_MCP_URL environment variable, then to the hosted endpoint.",
-+            "required": false,
-+            "title": "Mcp Url",
-+            "type": "string"
-+          }
-+        },
-+        "required": [],
-+        "title": "WebzioNewsSearchTool",
-+        "type": "object"
-+      },
-+      "name": "WebzioNewsSearchTool",
-+      "package_dependencies": [
-+        "mcp",
-+        "mcpadapt"
-+      ],
-+      "run_params_schema": {
-+        "additionalProperties": true,
-+        "description": "Fallback arguments, used until the live MCP schema has been fetched.\n\nExtra keys are allowed so that server-side filters still reach Webz.io when\nthe tool is running on this fallback; the MCP server validates them.",
-+        "properties": {
-+          "query": {
-+            "description": "The news search query string.",
-+            "title": "Query",
-+            "type": "string"
-+          }
-+        },
-+        "required": [
-+          "query"
-+        ],
-+        "title": "WebzioNewsSearchToolSchema",
-+        "type": "object"
-+      }
-+    },
-     {
-       "description": "A tool that can be used to semantic search a query from a XML's content.",
-       "env_vars": [],
+@@ -28484,7 +28484,7 @@
+             "type": "string"
+           }
+         },
+-        "description": "Search global news coverage with Webz.io over its hosted MCP server.\n\nThe argument schema is fetched from the MCP server when the tool is built,\nso filters that Webz.io adds server-side become available to the agent\nwithout a crewai-tools release. Construction does not fail when the server\nis unreachable: the tool keeps :class:`WebzioNewsSearchToolSchema` and\nretries the connection on the first call, which is where a missing token or\nan unreachable server is reported.\n\nThe MCP session stays open for reuse. Close it with :meth:`stop`, or use the\ntool as a context manager.\n\nAttributes:\n    api_token: The Webz.io API token.\n    mcp_url: The News Search MCP endpoint.\n    connect_timeout: Seconds allowed for the MCP connection.",
++        "description": "Search global news coverage with Webz.io over its hosted MCP server.\n\nThe argument schema is fetched from the MCP server when the tool is built,\nso filters that Webz.io adds server-side become available to the agent\nwithout a crewai-tools release. Construction does not fail when the server\nis unreachable: the tool keeps :class:`WebzioNewsSearchToolSchema` and\nretries the connection on the first call, which is where a missing token or\nan unreachable server is reported.\n\nThe MCP endpoint must be an absolute ``https://`` URL so the Bearer token\nis not sent in cleartext.\n\nThe MCP session stays open for reuse. Close it with :meth:`stop`, or use the\ntool as a context manager.\n\nAttributes:\n    api_token: The Webz.io API token.\n    mcp_url: The News Search MCP endpoint.\n    connect_timeout: Seconds allowed for the MCP connection.",
+         "properties": {
+           "api_token": {
+             "anyOf": [

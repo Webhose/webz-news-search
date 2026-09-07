@@ -48,11 +48,26 @@ The differences were driven by upstream conventions and CI:
   a `Tool Name: ... / Tool Arguments: ... / Tool Description: ...` composite.
   Only `args_schema` is adopted from the server; `BaseTool.formatted_description`
   recombines it for the LLM at prompt time.
+- `_connect()` and `stop()` share a `threading.Lock`; setup uses a local
+  `MCPServerAdapter` and closes it on handshake failure so concurrent searches
+  cannot leak duplicate MCP sessions.
+- The MCP endpoint must be an absolute `https://` URL so the Bearer token is
+  not sent in cleartext.
+
+## CodeRabbit review fixes (commit `0cdbbe4`)
+
+Addressed the three actionable review comments on [#7309](https://github.com/crewAIInc/crewAI/pull/7309):
+
+- Serialized the MCP lifecycle with a lock and local adapter setup.
+- Rejected non-HTTPS MCP endpoints before sending the token.
+- Rewrote the docs examples in all four locales to use the context manager for
+  exception-safe cleanup.
+- Added test docstrings and two new tests (concurrency, cleartext endpoint).
 
 ## Checks run before opening the PR
 
 ```bash
-uv run pytest lib/crewai-tools/tests/tools/webzio_news_search_tool_test.py   # 15 passed
+uv run pytest lib/crewai-tools/tests/tools/webzio_news_search_tool_test.py   # 17 passed
 uv run ruff check lib/                                                       # All checks passed
 uv run ruff format --check lib/                                              # 919 files already formatted
 uv run mypy lib/crewai-tools/src/crewai_tools/tools/webzio_tools/            # Success
