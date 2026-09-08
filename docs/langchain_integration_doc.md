@@ -155,7 +155,7 @@ You can also pass `api_token=` and `mcp_url=` to `WebzNewsSearch()`, `get_webz_t
 | --- | --- |
 | [MCP Server](https://docs.webz.io/docs/webz/news-search-api-mcp) | Cursor, Claude Desktop, ChatGPT connectors |
 | **langchain-webz** | Python apps and agents built with LangChain / LangGraph |
-| **crewai-webzio** | Python apps and agents built with [CrewAI](https://crewai.com/) — see [CrewAI integration doc](../crewai_integration_doc.md) |
+| **crewai-webzio** | Python apps and agents built with [CrewAI](https://crewai.com/) — see [CrewAI integration doc](crewai_integration_doc.md) |
 
 Both use the same token, the same MCP server, and the same search logic. Pick the integration that matches your framework.
 
@@ -176,5 +176,5 @@ Use `aget_webz_tools()` / `awebz_news_search()` instead.
 - [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters)
 - [LangChain tools listing (WebzNewsSearch)](https://docs.langchain.com/oss/python/integrations/tools/index#all-tools-and-toolkits)
 - [PyPI: langchain-webz](https://pypi.org/project/langchain-webz/)
-- [CrewAI Webzio integration](../crewai_integration_doc.md)
+- [CrewAI Webzio integration](crewai_integration_doc.md)
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)
