@@ -188,9 +188,11 @@ The LLM skipped the tool. Use a model with reliable tool calling and mention `ne
 **Validation error on `topic`**  
 `topic` expects a list of topic tags, not the search subject. Put the subject in `query`.
 
+<!-- HIDDEN until ag2ai/ag2#3232 merges - no docs.ag2.ai listing yet.
 ## AG2 Extensions listing (future)
 
 After `ag2-webzio` is stable on PyPI, Webz.io will contribute `WebzioNewsSearchToolkit` to [ag2ai/ag2](https://github.com/ag2ai/ag2) under `ag2.extensions.tools.search.webzio`, with a docs page at docs.ag2.ai. The `ag2-webzio` package remains the Webz-owned distribution for users who prefer a standalone PyPI install.
+-->
 
 ## Related links
 
@@ -198,5 +200,5 @@ After `ag2-webzio` is stable on PyPI, Webz.io will contribute `WebzioNewsSearchT
 - [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters)
 - [AG2 MCP servers guide](https://docs.ag2.ai/docs/user-guide/tools/mcp_servers/)
 - [PyPI: ag2-webzio](https://pypi.org/project/ag2-webzio/)
-- [CrewAI Webzio integration](https://docs.webz.io/docs/webz/crewai-webzio) (draft: [docs/crewai_integration_doc.md](../crewai_integration_doc.md))
+- [CrewAI Webzio integration](https://docs.webz.io/docs/webz/crewai-webzio) (draft: [docs/crewai_integration_doc.md](crewai_integration_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)

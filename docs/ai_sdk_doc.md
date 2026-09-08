@@ -16,7 +16,9 @@ Use **Webz.io Contextual News Search** in [Vercel AI SDK](https://ai-sdk.dev/) a
 
 The package is a thin TypeScript wrapper around the hosted [News Search MCP server](https://docs.webz.io/docs/webz/news-search-api-mcp). It uses [`@ai-sdk/mcp`](https://www.npmjs.com/package/@ai-sdk/mcp) under the hood. Tool names, descriptions, and filter schemas come live from `tools/list` on the server. When Webz adds new filters, they appear automatically without republishing the package.
 
+<!-- HIDDEN until vercel/ai#20024 merges - the tools registry has no Webz entry yet.
 Goal: appear in the [Vercel AI SDK tools registry](https://ai-sdk.dev/tools-registry) next to tools like Tavily and Exa, so developers can connect Webz news search to agents in a few lines of code.
+-->
 
 ## Prerequisites
 
@@ -240,17 +242,21 @@ You used a bare model string like `"openai/gpt-4.1-mini"` without AI Gateway. Us
 **Agent answers without searching**  
 The LLM skipped the tool. Use a model with reliable tool calling (for example `openai/gpt-4o-mini` via OpenRouter or OpenAI directly).
 
+<!-- HIDDEN until vercel/ai#20024 merges - the tools registry has no Webz entry yet.
 ## Vercel tools registry (future)
 
 After `@webz.io/ai-sdk` is published on npm, Webz will submit a one-time metadata PR to [vercel/ai `registry.ts`](https://github.com/vercel/ai/blob/main/content/tools-registry/registry.ts) so the package appears on [ai-sdk.dev/tools-registry](https://ai-sdk.dev/tools-registry). Guide: [add-new-tool-to-registry.md](https://github.com/vercel/ai/blob/main/contributing/add-new-tool-to-registry.md).
 
 Suggested listing name: **Webz.io Contextual News Search**
+-->
 
 ## Related links
 
 - [News Search MCP Server](https://docs.webz.io/docs/webz/news-search-api-mcp)
 - [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters)
 - [Vercel AI SDK MCP tools](https://ai-sdk.dev/docs/ai-sdk-core/mcp-tools)
+<!-- HIDDEN until vercel/ai#20024 merges - the tools registry has no Webz entry yet.
 - [Vercel AI SDK tools registry](https://ai-sdk.dev/tools-registry)
+-->
 - [npm: @webz.io/ai-sdk](https://www.npmjs.com/package/@webz.io/ai-sdk)
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)

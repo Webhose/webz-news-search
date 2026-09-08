@@ -37,6 +37,7 @@ export WEBZ_API_TOKEN="your-webz-api-token"
 Package: [pypi.org/project/crewai-webzio](https://pypi.org/project/crewai-webzio)  
 Source: [github.com/Webhose/webz-news-search](https://github.com/Webhose/webz-news-search) (`packages/crewai`)
 
+<!-- HIDDEN until crewAIInc/crewAI#7309 merges - WebzioNewsSearchTool is not in crewai-tools yet.
 After `crewai-webzio` is contributed upstream, you can also use:
 
 ```bash
@@ -49,6 +50,7 @@ from crewai_tools import WebzioNewsSearchTool
 ```
 
 Available in `crewai-tools` after the upstream PR merges (see `packages/crewai/upstream/` in this repo for the contribution bundle).
+-->
 
 ## Quick start: verify MCP connectivity
 
@@ -171,13 +173,15 @@ Webz News Search API
 
 You can also pass `api_token=` and `mcp_url=` to `WebzioNewsSearchTool()`.
 
-## MCP vs crewai-webzio vs built-in tool
+## MCP vs crewai-webzio
 
 | Approach | Best for |
 | --- | --- |
 | [MCP Server](https://docs.webz.io/docs/webz/news-search-api-mcp) | Cursor, Claude Desktop, ChatGPT connectors |
 | **crewai-webzio** | Python apps and agents built with CrewAI (standalone PyPI install) |
+<!-- HIDDEN until crewAIInc/crewAI#7309 merges - WebzioNewsSearchTool is not in crewai-tools yet.
 | **`WebzioNewsSearchTool` in crewai-tools** | CrewAI users who already install `crewai[tools]` (after upstream merge) |
+-->
 | CrewAI `Agent(mcps=[MCPServerHTTP(...)])` | Zero-install MCP DSL on the agent |
 
 All paths use the same token, the same MCP server, and the same search logic. Pick the integration that matches your framework.
@@ -199,11 +203,13 @@ The LLM skipped the tool. Use a model with reliable tool calling and mention `ne
 **Forgot to call `stop()`**  
 Use `with WebzioNewsSearchTool() as tool:` so the MCP session shuts down when the crew finishes.
 
+<!-- HIDDEN until crewAIInc/crewAI#7309 merges - no docs.crewai.com listing yet.
 ## CrewAI upstream listing (future)
 
 Webz.io will contribute `WebzioNewsSearchTool` to [crewAIInc/crewAI](https://github.com/crewAIInc/crewAI) under `lib/crewai-tools`, with a docs page in the Search & Research suite. The `crewai-webzio` package remains the Webz-owned distribution for users who prefer a standalone PyPI install.
 
 Contribution bundle: `packages/crewai/upstream/` in this repo.
+-->
 
 ## Related links
 
