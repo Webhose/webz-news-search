@@ -259,4 +259,5 @@ Suggested listing name: **Webz.io Contextual News Search**
 - [Vercel AI SDK tools registry](https://ai-sdk.dev/tools-registry)
 -->
 - [npm: @webz.io/ai-sdk](https://www.npmjs.com/package/@webz.io/ai-sdk)
+- [Groq integration](https://docs.webz.io/docs/webz/news-search-api-groq) (draft: [docs/groq_integration_doc.md](groq_integration_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)

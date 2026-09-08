@@ -218,4 +218,5 @@ Contribution bundle: `packages/crewai/upstream/` in this repo.
 - [CrewAI MCP overview](https://docs.crewai.com/en/mcp/overview)
 - [CrewAI Exa Search Tool](https://docs.crewai.com/en/tools/search-research/exasearchtool) (reference pattern)
 - [PyPI: crewai-webzio](https://pypi.org/project/crewai-webzio/)
+- [Groq integration](https://docs.webz.io/docs/webz/news-search-api-groq) (draft: [docs/groq_integration_doc.md](groq_integration_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)
