@@ -195,4 +195,5 @@ Ensure the LLM supports tool calling. Use a model with function-calling support 
 - [LlamaIndex MCP tools guide](https://developers.llamaindex.ai/python/framework/module_guides/mcp/llamaindex_mcp/)
 - [LlamaIndex agents and tools](https://developers.llamaindex.ai/python/framework/module_guides/deploying/agents/tools/)
 - [PyPI: llama-index-tools-webz](https://pypi.org/project/llama-index-tools-webz/)
+- [Groq integration](https://docs.webz.io/docs/webz/news-search-api-groq) (draft: [docs/groq_integration_doc.md](groq_integration_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)
