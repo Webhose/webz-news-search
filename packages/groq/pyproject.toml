@@ -1,0 +1,7 @@
+# Reference implementation, not a distributed package. Groq calls the hosted
+# Webz MCP server itself, so there is nothing to install alongside your app.
+# This file only configures pytest for packages/groq.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
