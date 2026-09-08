@@ -257,7 +257,7 @@ md("""
 md("""
 ## Demo 1: Breaking news research
 
-A plain-language question with no filters. The model picks the query and the lookback window itself.
+A plain-language question with no filters. The model writes the query and picks the lookback window itself.
 """)
 
 code('''
@@ -266,7 +266,9 @@ from IPython.display import Markdown
 ai_regulation_news = connect_groq_to_webz(
     client,
     tools,
-    "What happened with EU AI regulation in the past month? Summarize with sources.",
+    "What happened with EU AI regulation in the past month? "
+    "Run a single news_search_by_webz search, then summarize the main "
+    "developments and cite the article titles and URLs you used.",
 )
 ''')
 
@@ -330,8 +332,9 @@ regional_comparison = connect_groq_to_webz(
     client,
     tools,
     "Compare how European and American media are covering AI chip export controls. "
-    "Call news_search_by_webz twice: once with country DE and FR, once with country US. "
-    "Use days 30 and k 5 for both. Contrast the framing and cite sources from each region.",
+    "Make exactly two news_search_by_webz searches: one with country DE and FR, "
+    "one with country US. Use days 30 and k 5 for both. "
+    "Then contrast the framing and cite sources from each region.",
 )
 ''')
 

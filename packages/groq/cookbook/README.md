@@ -8,7 +8,7 @@ Tavily, Exa, and Firecrawl.
 - Upstream repo: [groq/groq-api-cookbook](https://github.com/groq/groq-api-cookbook)
 - Contribution guide: [CONTRIBUTING.md](https://github.com/groq/groq-api-cookbook/blob/main/CONTRIBUTING.md)
 - Branch: [`ShakedDegani/groq-api-cookbook:feat/mcp-webz-tutorial`](https://github.com/ShakedDegani/groq-api-cookbook/tree/feat/mcp-webz-tutorial)
-- Pull request: _not opened yet — the notebook still needs an end-to-end run with saved outputs_
+- Pull request: _not opened yet — the branch is pushed and ready to submit_
 
 ## Contents
 
@@ -26,12 +26,19 @@ the `03. Model Context Protocol (MCP)` list:
 - [Webz.io MCP with Groq](/tutorials/03-mcp/mcp-webz): Search global news with the Webz.io MCP and Groq API, filtering by sentiment, ticker, country, and other article metadata.
 ```
 
-`build_notebook.py` generates the notebook, so this bundle and the branch on the
-fork cannot drift:
+Two scripts keep this bundle and the branch on the fork from drifting.
+`build_notebook.py` writes the notebook structure, and `execute_notebook.py`
+runs it against the live APIs and saves the outputs:
 
 ```bash
 python build_notebook.py mcp-webz/mcp-webz.ipynb
+WEBZ_API_TOKEN=... GROQ_API_KEY=... python execute_notebook.py mcp-webz/mcp-webz.ipynb
 ```
+
+`execute_notebook.py` skips the cells that should ship without outputs (the
+`%pip install` cell, the `.env` echo cell, and the try-it-yourself placeholder,
+matching how `mcp-tavily` is committed) and aborts if either token reaches an
+output.
 
 ## Notebook structure
 
@@ -80,9 +87,8 @@ rejected. Two of those need active design work:
   cover search over MCP. The defensible angle is that Webz.io is a licensed
   news index rather than open-web search, so the notebook leads with the
   structured article metadata and never demonstrates scraping or crawling.
-- **Accuracy** is graded on working code, so the notebook must be executed end
-  to end with outputs saved before the PR is opened. That needs a real Groq key
-  (`gsk_` prefix, from [console.groq.com/keys](https://console.groq.com/keys)).
+- **Accuracy** is graded on working code, so the committed notebook carries
+  real outputs from an end-to-end run against `openai/gpt-oss-120b`.
 
 The guide also asks for a **neutral** tone on tools and products. The notebook
 is written as a Groq tutorial that happens to use Webz.io, not as Webz.io
@@ -97,16 +103,29 @@ import ast, json
 nb = json.load(open("mcp-webz/mcp-webz.ipynb"))
 for cell in nb["cells"]:
     src = "".join(cell["source"])
-    lines = cell["source"]
-    is_magic = any(line.lstrip().startswith(("!", "%")) for line in lines)
+    is_magic = any(line.lstrip().startswith(("!", "%")) for line in cell["source"])
     if cell["cell_type"] == "code" and not is_magic:
         ast.parse(src)
 PY
 ```
 
-Still to do: run the notebook end to end with a live `WEBZ_API_TOKEN` and
-`GROQ_API_KEY`, confirm every demo reports at least one `news_search_by_webz`
-call, and commit the executed outputs.
+Executed end to end on 8 Sep 2026 against `openai/gpt-oss-120b`. No cell raised,
+no token appears in any output, and every demo reported at least one
+`news_search_by_webz` call:
+
+| Demo | Response time | Tool calls | Filters the model chose |
+| --- | --- | --- | --- |
+| 1. Breaking news research | 9.5s | 1 | `days`, `k`, `language`, `sort_by` |
+| 2. Sentiment and ticker | 13.8s | 2 | `sentiment`, `ticker`, `days`, `language` |
+| 3. Regional comparison | 38.4s | 5 | `country`, `days`, `k`, `language` |
+
+Demo 3 was asked for two searches and made five, including one that retried in
+German and French. That is worth leaving in — it shows the model reading the
+live `language` and `country` schema rather than replaying the prompt.
+
+Both open-ended demos were tightened after a first run, where demo 1 looped into
+nine searches and took 75 seconds. Bounding the prompt to a single search cut it
+to 9.5 seconds without changing what the demo teaches.
 
 ## Getting the catalog listing
 
