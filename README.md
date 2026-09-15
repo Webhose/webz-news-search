@@ -14,6 +14,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `crewai-webzio` | PyPI | `packages/crewai` |
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
 | `n8n-nodes-webz-news-search` | npm | `packages/n8n-node` |
+| `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
 
 ## Groq
 
@@ -29,5 +30,9 @@ Two paths:
 - **Built-in MCP Client Tool** ([`n8n/`](n8n)): no install step; connect an AI Agent directly to the MCP server so filters still come from `tools/list` at runtime.
 
 Setup steps and importable workflow templates are in [`n8n/`](n8n).
+
+## Dify
+
+Not a PyPI package. Dify Marketplace installs a `.difypkg` plugin from [`packages/dify`](packages/dify). After the listing PR is merged, search for **Webz News Search** on [marketplace.dify.ai](https://marketplace.dify.ai/). Dify v1.6+ can also add `https://news-search-mcp.webz.io/mcp` under Tools → MCP without a plugin.
 
 Docs: https://docs.webz.io/docs/webz/news-search-api-mcp

@@ -1,0 +1,39 @@
+version: 0.1.0
+type: plugin
+author: webhose
+name: webz_news_search
+label:
+  en_US: Webz News Search
+  zh_Hans: Webz News Search
+  pt_BR: Webz News Search
+description:
+  en_US: Search global news in natural language with Webz.io. Semantic ranking plus filters for date, country, language, category, sentiment, ticker, and more.
+  zh_Hans: Search global news in natural language with Webz.io. Semantic ranking plus filters for date, country, language, category, sentiment, ticker, and more.
+  pt_BR: Search global news in natural language with Webz.io. Semantic ranking plus filters for date, country, language, category, sentiment, ticker, and more.
+icon: icon.png
+resource:
+  memory: 67108864
+  permission:
+    tool:
+      enabled: true
+plugins:
+  tools:
+    - provider/webz.yaml
+meta:
+  version: 0.1.0
+  arch:
+    - amd64
+    - arm64
+  runner:
+    language: python
+    version: "3.12"
+    entrypoint: main
+created_at: 2026-09-14T12:00:00Z
+privacy: PRIVACY.md
+verified: false
+tags:
+  - search
+  - news
+network:
+  domains:
+    - news-search-mcp.webz.io
