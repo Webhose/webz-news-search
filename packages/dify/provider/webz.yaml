@@ -26,9 +26,9 @@ credentials_schema:
       zh_Hans: Your Webz.io API token
       pt_BR: Your Webz.io API token
     help:
-      en_US: Same token as the News Search API. Get it from https://webz.io. Setup docs: https://docs.webz.io/docs/webz/news-search-api-mcp
-      zh_Hans: Same token as the News Search API. Get it from https://webz.io. Setup docs: https://docs.webz.io/docs/webz/news-search-api-mcp
-      pt_BR: Same token as the News Search API. Get it from https://webz.io. Setup docs: https://docs.webz.io/docs/webz/news-search-api-mcp
+      en_US: "Same token as the News Search API. Get it from https://webz.io. Setup docs: https://docs.webz.io/docs/webz/news-search-api-mcp"
+      zh_Hans: "Same token as the News Search API. Get it from https://webz.io. Setup docs: https://docs.webz.io/docs/webz/news-search-api-mcp"
+      pt_BR: "Same token as the News Search API. Get it from https://webz.io. Setup docs: https://docs.webz.io/docs/webz/news-search-api-mcp"
     url: https://webz.io
 tools:
   - tools/news_search_by_webz.yaml
