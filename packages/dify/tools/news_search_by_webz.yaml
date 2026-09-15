@@ -1,0 +1,217 @@
+identity:
+  name: news_search_by_webz
+  author: webhose
+  label:
+    en_US: Webz News Search
+    zh_Hans: Webz News Search
+    pt_BR: Webz News Search
+description:
+  human:
+    en_US: Search global news using natural language. Returns ranked article excerpts with titles, URLs, and metadata from Webz.io.
+    zh_Hans: Search global news using natural language. Returns ranked article excerpts with titles, URLs, and metadata from Webz.io.
+    pt_BR: Search global news using natural language. Returns ranked article excerpts with titles, URLs, and metadata from Webz.io.
+  llm: Search global news with Webz.io. Use a natural-language query, not keyword hacking. Optional filters include days, language, country, sentiment, category, domain, ticker, person, organization, location, and topic. Put the search subject in query, not in topic.
+parameters:
+  - name: query
+    type: string
+    required: true
+    label:
+      en_US: Query
+    human_description:
+      en_US: Natural-language news search, for example "EU AI Act enforcement updates".
+    llm_description: Natural-language search query. Put the subject here, not in the topic filter.
+    form: llm
+  - name: k
+    type: number
+    required: false
+    default: 10
+    min: 1
+    max: 100
+    label:
+      en_US: Result count
+    human_description:
+      en_US: Maximum number of articles to return.
+    llm_description: Maximum number of articles to return (1-100). Default 10.
+    form: llm
+  - name: days
+    type: number
+    required: false
+    min: 1
+    label:
+      en_US: Days
+    human_description:
+      en_US: Lookback window in days. Omit to use the server default (last 7 days) unless Search all dates is enabled.
+    llm_description: Lookback window in days. Omit unless a specific window is needed.
+    form: llm
+  - name: allow_all_dates
+    type: boolean
+    required: false
+    default: false
+    label:
+      en_US: Search all dates
+    human_description:
+      en_US: Search the full indexed coverage window instead of the recent lookback.
+    llm_description: Set true only when the user wants results outside the recent lookback window.
+    form: llm
+  - name: language
+    type: string
+    required: false
+    label:
+      en_US: Language
+    human_description:
+      en_US: Full language names, comma-separated, for example english, french, arabic.
+    llm_description: Full language names, comma-separated, for example english, french. Not ISO codes.
+    form: llm
+  - name: country
+    type: string
+    required: false
+    label:
+      en_US: Country
+    human_description:
+      en_US: ISO-2 country codes, comma-separated, for example US, GB, DE.
+    llm_description: ISO-2 country codes in uppercase, comma-separated, for example US, GB, DE.
+    form: llm
+  - name: sentiment
+    type: string
+    required: false
+    label:
+      en_US: Sentiment
+    human_description:
+      en_US: positive, negative, or neutral. Comma-separated if more than one.
+    llm_description: One or more of positive, negative, neutral. Comma-separated.
+    form: llm
+  - name: category
+    type: string
+    required: false
+    label:
+      en_US: Category
+    human_description:
+      en_US: IPTC category labels, comma-separated, for example Politics, Economy, Business and Finance.
+    llm_description: IPTC category labels, comma-separated. Use only when the user asks for a specific category.
+    form: llm
+  - name: domain
+    type: string
+    required: false
+    label:
+      en_US: Include domains
+    human_description:
+      en_US: Include only these source domains, comma-separated, for example cnn.com, yahoo.com.
+    llm_description: Include only these source domains, comma-separated.
+    form: llm
+  - name: exclude_domain
+    type: string
+    required: false
+    label:
+      en_US: Exclude domains
+    human_description:
+      en_US: Exclude these source domains, comma-separated.
+    llm_description: Exclude these source domains, comma-separated.
+    form: llm
+  - name: ticker
+    type: string
+    required: false
+    label:
+      en_US: Ticker
+    human_description:
+      en_US: Stock tickers in uppercase, comma-separated, for example NVDA, TSLA.
+    llm_description: Uppercase ticker symbols, comma-separated, for example NVDA.
+    form: llm
+  - name: person
+    type: string
+    required: false
+    label:
+      en_US: Person
+    human_description:
+      en_US: People mentioned in articles, comma-separated.
+    llm_description: People mentioned in articles, comma-separated.
+    form: llm
+  - name: organization
+    type: string
+    required: false
+    label:
+      en_US: Organization
+    human_description:
+      en_US: Organizations mentioned in articles, comma-separated.
+    llm_description: Organizations mentioned in articles, comma-separated.
+    form: llm
+  - name: location
+    type: string
+    required: false
+    label:
+      en_US: Location
+    human_description:
+      en_US: Places mentioned in articles, comma-separated.
+    llm_description: Places mentioned in articles, comma-separated.
+    form: llm
+  - name: topic
+    type: string
+    required: false
+    label:
+      en_US: Topic
+    human_description:
+      en_US: Topic labels from article metadata. Do not put the search subject here.
+    llm_description: Topic metadata labels only. The search subject belongs in query.
+    form: llm
+  - name: political_bias
+    type: string
+    required: false
+    label:
+      en_US: Political bias
+    human_description:
+      en_US: Political bias labels from trust metadata, comma-separated.
+    llm_description: Political bias labels from trust metadata, comma-separated.
+    form: llm
+  - name: domain_rank_gte
+    type: number
+    required: false
+    min: 1
+    label:
+      en_US: Min domain rank
+    human_description:
+      en_US: Minimum source domain rank. Lower ranks are more popular.
+    llm_description: Minimum source domain rank integer. Lower is more popular.
+    form: llm
+  - name: domain_rank_lte
+    type: number
+    required: false
+    min: 1
+    label:
+      en_US: Max domain rank
+    human_description:
+      en_US: Maximum source domain rank. Lower ranks are more popular.
+    llm_description: Maximum source domain rank integer. Lower is more popular.
+    form: llm
+  - name: score_gte
+    type: number
+    required: false
+    min: 0
+    max: 10
+    label:
+      en_US: Min score
+    human_description:
+      en_US: Minimum match score from 0 to 10.
+    llm_description: Minimum match score 0-10.
+    form: llm
+  - name: score_lte
+    type: number
+    required: false
+    min: 0
+    max: 10
+    label:
+      en_US: Max score
+    human_description:
+      en_US: Maximum match score from 0 to 10.
+    llm_description: Maximum match score 0-10.
+    form: llm
+  - name: additional_filters
+    type: string
+    required: false
+    label:
+      en_US: Additional filters JSON
+    human_description:
+      en_US: Optional JSON object merged into the MCP call for filters not listed above.
+    llm_description: Optional JSON object of extra MCP filters. Use only for fields not covered by the other parameters.
+    form: llm
+extra:
+  python:
+    source: tools/news_search_by_webz.py

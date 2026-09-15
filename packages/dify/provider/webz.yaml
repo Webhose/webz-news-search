@@ -1,0 +1,37 @@
+identity:
+  author: webhose
+  name: webz
+  label:
+    en_US: Webz News Search
+    zh_Hans: Webz News Search
+    pt_BR: Webz News Search
+  description:
+    en_US: Search global news in natural language with semantic ranking and filters for date, country, language, category, and sentiment.
+    zh_Hans: Search global news in natural language with semantic ranking and filters for date, country, language, category, and sentiment.
+    pt_BR: Search global news in natural language with semantic ranking and filters for date, country, language, category, and sentiment.
+  icon: icon.png
+  tags:
+    - search
+    - news
+credentials_schema:
+  - name: api_token
+    type: secret-input
+    required: true
+    label:
+      en_US: Webz API token
+      zh_Hans: Webz API token
+      pt_BR: Webz API token
+    placeholder:
+      en_US: Your Webz.io API token
+      zh_Hans: Your Webz.io API token
+      pt_BR: Your Webz.io API token
+    help:
+      en_US: Same token as the News Search API. Get it from the Webz.io dashboard.
+      zh_Hans: Same token as the News Search API. Get it from the Webz.io dashboard.
+      pt_BR: Same token as the News Search API. Get it from the Webz.io dashboard.
+    url: https://webz.io
+tools:
+  - tools/news_search_by_webz.yaml
+extra:
+  python:
+    source: provider/webz.py
