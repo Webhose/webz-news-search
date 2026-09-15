@@ -1,6 +1,6 @@
 version: 0.1.0
 type: plugin
-author: webhose
+author: ori-webz
 name: webz_news_search
 label:
   en_US: Webz News Search

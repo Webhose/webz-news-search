@@ -27,6 +27,9 @@ The plugin does not call services other than `news-search-mcp.webz.io`. That ser
 
 See https://webz.io/privacy
 
+Product and MCP docs: https://docs.webz.io/docs/webz/news-search-api-mcp
+
 ## Contact
 
-support@webz.io
+Website: https://webz.io
+Email: support@webz.io

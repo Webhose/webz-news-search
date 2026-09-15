@@ -71,12 +71,14 @@ Full filter reference: [MCP tool reference](https://docs.webz.io/docs/webz/news-
 
 ## Troubleshooting
 
-- **Authorize fails** — the token is missing or rejected. Use the News Search API token from the Webz.io dashboard.
-- **Empty or timeout results** — raise the MCP timeouts in native MCP settings, or retry with a smaller `k`.
-- **Plugin not on Marketplace yet** — use native MCP above, or install a local `.difypkg` from Plugins → Install via local file while the listing PR is in review.
+- **Authorize fails** - the token is missing or rejected. Use the News Search API token from the Webz.io dashboard.
+- **Empty or timeout results** - raise the MCP timeouts in native MCP settings, or retry with a smaller `k`.
+- **Plugin not on Marketplace yet** - use native MCP above, or install a local `.difypkg` from Plugins → Install via local file while the listing PR is in review.
 
 ## Support
 
+- Website: https://webz.io
+- Framework SDKs: https://docs.webz.io/docs/webz/news-search-api-framework-sdks
 - MCP docs: https://docs.webz.io/docs/webz/news-search-api-mcp
 - Issues: https://github.com/Webhose/webz-news-search/issues
 - Email: support@webz.io
