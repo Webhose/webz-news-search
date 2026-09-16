@@ -45,8 +45,8 @@ jobs:
       - name: Update npm for trusted publishing
         run: npm install -g npm@latest
 
-      - name: Stage publish to npm
-        run: npm stage publish
+      - name: Publish to npm
+        run: npm publish --provenance --access public
 
       - name: Commit version bump
         working-directory: .
