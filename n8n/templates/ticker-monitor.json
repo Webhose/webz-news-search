@@ -1,32 +1,32 @@
 {
-  "name": "Send stock ticker news alerts to Slack with Webz.io and GPT-4.1-mini",
+  "name": "Monitor a stock watchlist for market-moving news and alert Slack with Webz.io and GPT-4.1-mini",
   "nodes": [
     {
       "parameters": {
-        "content": "## Send stock ticker news alerts to Slack with Webz.io and GPT-4.1-mini\n\n### Who's it for\n\nInvestors, equity analysts, and investor-relations teams who want signal on one holding without a firehose of price recaps and opinion pieces.\n\n### How it works\n\n1. A schedule trigger fires every 6 hours.\n2. **Monitor settings** holds the ticker, lookback window, article count, and Slack channel, so it is the only node you edit.\n3. **Judge if the news is material** searches Webz.io news filtered by that ticker, then keeps only genuinely market-moving stories: earnings, guidance, regulatory action, partnerships, supply chain disruption, executive changes, or rating changes. Routine commentary and price recaps do not qualify.\n4. **Did the agent reply?** sends a failed run to **Report the failure** instead of alerting on nothing.\n5. On a quiet run the agent replies `NO_SIGNIFICANT_NEWS` and no alert is sent.\n\n### How to set up\n\n1. On **Webz.io news search**, create a **Bearer Auth** credential and paste your Webz.io API token as the bearer token.\n2. On **OpenAI Chat Model**, add your OpenAI credential.\n3. On **Send the alert to Slack**, add a Slack credential whose bot token has `chat:write` and `channels:read`, then invite that bot to your channel.\n4. Set your ticker and channel in **Monitor settings**. Ticker symbols must be uppercase.\n5. Set **Workflow Settings \u2192 Timezone** so the schedule matches your market hours.\n\n### Requirements\n\n- A Webz.io API token from [webz.io](https://webz.io)\n- An OpenAI API key, or any other tool-calling chat model\n- A Slack workspace where you can install a bot\n\n### How to customize\n\nChange the ticker in **Monitor settings**, not in the prompt, and copy the workflow once per holding. Edit the list of material event types in the agent's system message to match how you invest.\n\n[Setup notes and full filter reference](https://github.com/Webhose/webz-news-search/blob/main/n8n/README.md)",
-        "height": 1280,
-        "width": 460
+        "content": "## Monitor a stock watchlist for market-moving news and alert Slack with Webz.io and GPT-4.1-mini\n\n### Who's it for\n\nInvestors, equity analysts, and investor-relations teams who hold more than one position and want signal on all of them without a firehose of price recaps and opinion pieces.\n\n### How it works\n\n1. A schedule trigger fires every 6 hours.\n2. **Monitor settings** holds a comma-separated ticker watchlist, the lookback window, article count, and Slack channel, so it is the only node you edit.\n3. **One item per ticker** validates and fans the watchlist out, and **Judge if the news is material** runs once per ticker: it searches Webz.io news filtered by that ticker and keeps only genuinely market-moving stories — earnings, guidance, regulatory action, partnerships, supply chain disruption, executive changes, rating changes. The Structured Output Parser forces each story into `headline`, `publisher`, `event_type`, `summary`, `url`.\n4. **Drop stories already alerted** remembers every URL it has alerted on (in workflow static data) and discards repeats, so the same story never pings the channel twice even though the lookback windows overlap.\n5. Anything genuinely new goes to Slack as one alert, grouped by ticker and tagged by event type. A quiet run sends nothing, and a failed run stops with a readable error instead of staying silent.\n\n### How to set up\n\n1. On **Webz.io news search**, create a **Bearer Auth** credential and paste your Webz.io API token as the bearer token.\n2. On **OpenAI Chat Model**, add your OpenAI credential.\n3. On **Send the alert to Slack**, add a Slack credential whose bot token has `chat:write` and `channels:read`, then invite that bot to your channel.\n4. Set your tickers and channel in **Monitor settings**. Ticker symbols must be uppercase.\n5. Set **Workflow Settings \u2192 Timezone** so the schedule matches your market hours, then activate the workflow — the deduplication memory only persists between production runs.\n\n### Requirements\n\n- A Webz.io API token from [webz.io](https://webz.io)\n- An OpenAI API key, or any other tool-calling chat model\n- A Slack workspace where you can install a bot\n\n### How to customize\n\nAdd or remove tickers in **Monitor settings** — one workflow covers the whole watchlist. Edit the list of material event types in the agent's system message to match how you invest, and tighten the schedule to hourly during earnings season.\n\n[Setup notes and full filter reference](https://github.com/Webhose/webz-news-search/blob/main/n8n/README.md)",
+        "height": 1560,
+        "width": 480
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -780,
-        -260
+        -1100,
+        -320
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000008",
       "name": "Template overview"
     },
     {
       "parameters": {
-        "content": "### 1. Runs every 6 hours\n\nGood for a single holding. Tighten to hourly during earnings season.\n\nn8n defaults to UTC, so set **Workflow Settings \u2192 Timezone** to match your market hours.",
-        "height": 520,
+        "content": "### 1. Runs every 6 hours\n\nTighten to hourly during earnings season.\n\nn8n defaults to UTC, so set **Workflow Settings \u2192 Timezone** to match your market hours.",
+        "height": 560,
         "width": 200,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -280,
+        -580,
         -260
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-00000000000b",
@@ -34,15 +34,15 @@
     },
     {
       "parameters": {
-        "content": "### 2. Edit your settings here\n\nTicker, lookback window, article count, and Slack channel all live in this one node.\n\nTicker symbols must be uppercase, for example `NVDA`.",
-        "height": 520,
+        "content": "### 2. Edit your watchlist here\n\nTickers are a comma-separated list, uppercase, for example `NVDA, AAPL, MSFT`.\n\nLookback window, article count, and Slack channel live here too.",
+        "height": 560,
         "width": 220,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -60,
+        -360,
         -260
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-00000000000c",
@@ -50,15 +50,15 @@
     },
     {
       "parameters": {
-        "content": "### 3. Search, then judge\n\nThe agent searches Webz.io news for the ticker and keeps only genuinely market-moving stories: earnings, guidance, regulatory action, partnerships, supply chain, executive changes, and rating changes.\n\n**Credentials to add below**\n\n- **Webz.io news search**: a *Bearer Auth* credential holding your Webz.io API token\n- **OpenAI Chat Model**: your OpenAI key, or swap the node for any other tool-calling model\n\nLeave *Tools to Include* set to **All** \u2014 the server exposes a single tool.",
-        "height": 740,
-        "width": 400,
+        "content": "### 3. One judgement per ticker, structured output\n\n**One item per ticker** validates the symbols and fans the watchlist out, and the agent runs once per ticker.\n\nIt searches Webz.io news for that ticker and keeps only market-moving stories: earnings, guidance, regulatory action, partnerships, supply chain, executive changes, rating changes. The **Structured Output Parser** forces each story into `headline`, `publisher`, `event_type`, `summary`, `url`.\n\n**Credentials to add below**\n\n- **Webz.io news search**: a *Bearer Auth* credential holding your Webz.io API token\n- **OpenAI Chat Model**: your OpenAI key, or swap the node for any other tool-calling model\n\nLeave *Tools to Include* set to **All** \u2014 the server exposes a single tool.",
+        "height": 820,
+        "width": 460,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        200,
+        -120,
         -260
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-00000000000d",
@@ -66,15 +66,15 @@
     },
     {
       "parameters": {
-        "content": "### 4. Fail loudly, not silently\n\nA broken credential makes the agent answer as though the ticker were quiet. This branch stops the run with a readable error instead.",
-        "height": 740,
-        "width": 220,
+        "content": "### 4. Never alert twice, fail loudly\n\n**Drop stories already alerted** keeps the URLs of past alerts in workflow static data and discards repeats, so overlapping lookback windows do not re-ping the channel. Static data persists between production runs of an **active** workflow, not between manual test runs.\n\nA failed ticker run is routed to **Report the failure** and stops the workflow with a readable error instead of staying silent.",
+        "height": 820,
+        "width": 260,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        620,
+        380,
         -260
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-00000000000e",
@@ -82,15 +82,15 @@
     },
     {
       "parameters": {
-        "content": "### 5. Alert, or stay quiet\n\nOn a quiet run the agent replies `NO_SIGNIFICANT_NEWS` and nothing is sent, so a quiet day stays quiet.\n\nSlack needs a bot token with `chat:write` and `channels:read`, and the bot has to be invited to the channel.",
-        "height": 420,
-        "width": 420,
+        "content": "### 5. Alert, or stay quiet\n\nGenuinely new, material stories go out as one Slack alert, grouped by ticker and tagged by event type. A quiet run sends nothing, so a quiet day stays quiet.\n\nSlack needs a bot token with `chat:write` and `channels:read`, and the bot has to be invited to the channel.",
+        "height": 560,
+        "width": 460,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        860,
+        660,
         -260
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-00000000000f",
@@ -110,7 +110,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.4,
       "position": [
-        -230,
+        -540,
         120
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000001",
@@ -123,8 +123,8 @@
           "assignments": [
             {
               "id": "b2e3d4c5-2222-4b02-9d02-0000000000f1",
-              "name": "ticker",
-              "value": "NVDA",
+              "name": "tickers",
+              "value": "NVDA, AAPL, MSFT",
               "type": "string"
             },
             {
@@ -152,7 +152,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        10,
+        -320,
         120
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000009",
@@ -160,17 +160,31 @@
     },
     {
       "parameters": {
+        "jsCode": "const settings = $input.first().json;\nconst tickers = String(settings.tickers || '')\n  .split(',')\n  .map((ticker) => ticker.trim().toUpperCase())\n  .filter(Boolean);\n\nif (tickers.length === 0) {\n  throw new Error('Monitor settings has no tickers. Put at least one symbol in tickers, separated by commas.');\n}\n\nconst invalid = tickers.filter((ticker) => !/^[A-Z][A-Z0-9.\\-]{0,9}$/.test(ticker));\nif (invalid.length > 0) {\n  throw new Error('These do not look like ticker symbols: ' + invalid.join(', ') + '. Use uppercase symbols such as NVDA.');\n}\n\nreturn tickers.map((ticker) => ({\n  json: {\n    ticker,\n    lookbackDays: settings.lookbackDays,\n    articleCount: settings.articleCount,\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        120
+      ],
+      "id": "b2e3d4c5-2222-4b02-9d02-000000000010",
+      "name": "One item per ticker"
+    },
+    {
+      "parameters": {
         "promptType": "define",
-        "text": "=Call the Webz.io news search tool exactly once, with these arguments:\n\n- query: market-moving news, earnings, guidance and analyst reaction for {{ $json.ticker }}\n- ticker: [\"{{ $json.ticker }}\"]\n- days: {{ $json.lookbackDays }}\n- language: [\"english\"]\n- k: {{ $json.articleCount }}\n\nDo not pass any other filters.\n\nDecide whether anything returned is genuinely market-moving: earnings, guidance, regulatory action, major partnerships, supply chain disruption, executive changes, or analyst rating changes. Routine commentary, opinion pieces, and price-movement recaps do not count.\n\nIf there is something material, summarize each item in one or two sentences with the publisher and the URL.\n\nIf there is nothing material, reply with exactly this and nothing else:\nNO_SIGNIFICANT_NEWS",
+        "text": "=You are monitoring one holding: {{ $json.ticker }}\n\nCall the Webz.io news search tool exactly once, with these arguments:\n\n- query: market-moving news, earnings, guidance and analyst reaction for {{ $json.ticker }}\n- ticker: [\"{{ $json.ticker }}\"]\n- days: {{ $json.lookbackDays }}\n- language: [\"english\"]\n- k: {{ $json.articleCount }}\n\nDo not pass any other filters.\n\nDecide whether anything returned is genuinely market-moving: earnings, guidance, regulatory action, major partnerships, supply chain disruption, executive changes, or analyst rating changes. Routine commentary, opinion pieces, and price-movement recaps do not count.\n\nReturn every material story in the required output format, with the event_type that fits best and a one-or-two-sentence summary. Set the ticker field to {{ $json.ticker }}.\n\nIf nothing is material, return an empty items array.",
+        "hasOutputParser": true,
         "options": {
-          "systemMessage": "You are a markets analyst filtering news for signal over noise.\n\nAlways use the Webz.io news search tool. Never rely on your own knowledge of current events, and never invent an article, a publisher, or a URL. Report only what the tool returns.\n\nPut the subject you are searching for in the `query` argument. Do not put it in the `topic` filter \u2014 `topic` is a separate context-enrichment filter and is not a substitute for the query.\n\nList-valued filters such as language, country, ticker, and topic must be passed as arrays, never as bare strings. For example ticker must be [\"NVDA\"], not \"NVDA\".\n\nIf a search using category or sentiment filters returns nothing, retry once without those filters before giving up.\n\nBe strict about what counts as material. A quiet day is a normal outcome, and replying NO_SIGNIFICANT_NEWS is the correct answer far more often than not.",
+          "systemMessage": "You are a markets analyst filtering news for signal over noise.\n\nAlways use the Webz.io news search tool. Never rely on your own knowledge of current events, and never invent an article, a publisher, or a URL. Report only what the tool returns, and copy URLs exactly as the tool gives them.\n\nPut the subject you are searching for in the `query` argument. Do not put it in the `topic` filter \u2014 `topic` is a separate context-enrichment filter and is not a substitute for the query.\n\nList-valued filters such as language, country, ticker, and topic must be passed as arrays, never as bare strings. For example ticker must be [\"NVDA\"], not \"NVDA\".\n\nIf a search using category or sentiment filters returns nothing, retry once without those filters before giving up.\n\nBe strict about what counts as material. A quiet run is a normal outcome, and an empty items array is the correct answer far more often than not.",
           "enableStreaming": false
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        300,
+        120,
         120
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000002",
@@ -193,8 +207,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        240,
-        360
+        0,
+        380
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000003",
       "name": "OpenAI Chat Model"
@@ -209,11 +223,52 @@
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.4,
       "position": [
-        420,
-        360
+        160,
+        380
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000004",
       "name": "Webz.io news search"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"ticker\": { \"type\": \"string\" },\n    \"items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"headline\": { \"type\": \"string\" },\n          \"publisher\": { \"type\": \"string\" },\n          \"event_type\": {\n            \"type\": \"string\",\n            \"enum\": [\"earnings\", \"guidance\", \"regulatory\", \"partnership\", \"supply_chain\", \"executive_change\", \"rating_change\", \"other_material\"]\n          },\n          \"summary\": { \"type\": \"string\" },\n          \"url\": { \"type\": \"string\" }\n        },\n        \"required\": [\"headline\", \"publisher\", \"event_type\", \"summary\", \"url\"]\n      }\n    }\n  },\n  \"required\": [\"ticker\", \"items\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        380
+      ],
+      "id": "b2e3d4c5-2222-4b02-9d02-000000000011",
+      "name": "Enforce the alert format"
+    },
+    {
+      "parameters": {
+        "errorType": "errorMessage",
+        "errorMessage": "A ticker check failed before it could decide whether to alert. Check the Bearer Auth credential on the Webz.io news search node, the chat model credential, and the agent output in this execution."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        500,
+        380
+      ],
+      "id": "b2e3d4c5-2222-4b02-9d02-000000000007",
+      "name": "Report the failure"
+    },
+    {
+      "parameters": {
+        "jsCode": "const settings = $('Monitor settings').first().json;\nconst staticData = $getWorkflowStaticData('global');\nconst alerted = new Set(Array.isArray(staticData.alertedUrls) ? staticData.alertedUrls : []);\nconst clean = (value) => String(value ?? '').replace(/[<>|]/g, '').trim();\n\nconst labels = {\n  earnings: 'Earnings',\n  guidance: 'Guidance',\n  regulatory: 'Regulatory',\n  partnership: 'Partnership',\n  supply_chain: 'Supply chain',\n  executive_change: 'Executive change',\n  rating_change: 'Rating change',\n  other_material: 'Material news',\n};\n\nconst sections = [];\n\nfor (const item of $input.all()) {\n  const output = item.json.output || {};\n  const ticker = clean(output.ticker).toUpperCase() || 'WATCHLIST';\n  const materialItems = Array.isArray(output.items) ? output.items : [];\n  const lines = [];\n\n  for (const story of materialItems) {\n    const url = String(story?.url ?? '').trim();\n    if (!url || alerted.has(url)) continue;\n    alerted.add(url);\n\n    const headline = clean(story.headline) || url;\n    const publisher = clean(story.publisher);\n    const summary = clean(story.summary);\n    const label = labels[story.event_type] || 'Material news';\n\n    let line = '\u2022 *' + label + '* \u2014 <' + url + '|' + headline + '>';\n    if (publisher) line += ' (' + publisher + ')';\n    if (summary) line += '\\n    ' + summary;\n    lines.push(line);\n  }\n\n  if (lines.length > 0) {\n    sections.push('*' + ticker + '*\\n' + lines.join('\\n'));\n  }\n}\n\n// Remember what was alerted, capped so static data stays small.\nstaticData.alertedUrls = Array.from(alerted).slice(-500);\n\nconst alertText = ':rotating_light: *Watchlist news alert*\\n\\n' + sections.join('\\n\\n');\n\nreturn [{\n  json: {\n    hasAlerts: sections.length > 0,\n    alertText,\n    slackChannel: settings.slackChannel,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        120
+      ],
+      "id": "b2e3d4c5-2222-4b02-9d02-000000000012",
+      "name": "Drop stories already alerted"
     },
     {
       "parameters": {
@@ -226,12 +281,12 @@
           },
           "conditions": [
             {
-              "id": "b2e3d4c5-2222-4b02-9d02-0000000000c0",
-              "leftValue": "={{ $json.output || '' }}",
+              "id": "b2e3d4c5-2222-4b02-9d02-0000000000c1",
+              "leftValue": "={{ $json.hasAlerts }}",
               "rightValue": "",
               "operator": {
-                "type": "string",
-                "operation": "notEmpty",
+                "type": "boolean",
+                "operation": "true",
                 "singleValue": true
               }
             }
@@ -246,55 +301,8 @@
         680,
         120
       ],
-      "id": "b2e3d4c5-2222-4b02-9d02-00000000000a",
-      "name": "Did the agent reply?"
-    },
-    {
-      "parameters": {
-        "errorType": "errorMessage",
-        "errorMessage": "The ticker check failed before it could decide whether to alert. Check the Bearer Auth credential on the Webz.io news search node, the chat model credential, and the tool output in this execution."
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        680,
-        360
-      ],
-      "id": "b2e3d4c5-2222-4b02-9d02-000000000007",
-      "name": "Report the failure"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "b2e3d4c5-2222-4b02-9d02-0000000000c1",
-              "leftValue": "={{ $json.output || '' }}",
-              "rightValue": "NO_SIGNIFICANT_NEWS",
-              "operator": {
-                "type": "string",
-                "operation": "notContains"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        920,
-        -40
-      ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000005",
-      "name": "Is the news material?"
+      "name": "Is there anything new to alert?"
     },
     {
       "parameters": {
@@ -302,16 +310,16 @@
         "channelId": {
           "__rl": true,
           "mode": "name",
-          "value": "={{ $('Monitor settings').item.json.slackChannel }}"
+          "value": "={{ $json.slackChannel }}"
         },
-        "text": "=*{{ $('Monitor settings').item.json.ticker }} news alert*\n\n{{ $json.output }}",
+        "text": "={{ $json.alertText }}",
         "otherOptions": {}
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        1140,
-        -40
+        920,
+        100
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000006",
       "name": "Send the alert to Slack"
@@ -333,6 +341,17 @@
       "main": [
         [
           {
+            "node": "One item per ticker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per ticker": {
+      "main": [
+        [
+          {
             "node": "Judge if the news is material",
             "type": "main",
             "index": 0
@@ -344,7 +363,7 @@
       "main": [
         [
           {
-            "node": "Did the agent reply?",
+            "node": "Drop stories already alerted",
             "type": "main",
             "index": 0
           }
@@ -380,25 +399,29 @@
         ]
       ]
     },
-    "Did the agent reply?": {
+    "Enforce the alert format": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Judge if the news is material",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drop stories already alerted": {
       "main": [
         [
           {
-            "node": "Is the news material?",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Report the failure",
+            "node": "Is there anything new to alert?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Is the news material?": {
+    "Is there anything new to alert?": {
       "main": [
         [
           {
