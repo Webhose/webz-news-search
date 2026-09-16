@@ -44,15 +44,15 @@ jobs:
       - name: Update npm for trusted publishing
         run: npm install -g npm@latest
 
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+
       - name: Commit version bump
         working-directory: .
         run: |
           git add packages/n8n-node/package.json packages/n8n-node/package-lock.json
           git commit -m "ci: bump n8n-nodes-webz-news-search to ${{ steps.bump-version.outputs.version }}"
           git push
-
-      - name: Publish to npm
-        run: npm publish --provenance --access public
 
       - name: Create release
         uses: softprops/action-gh-release@v2
