@@ -1,17 +1,17 @@
 {
-  "name": "Chat with global news from Webz.io using an AI agent and GPT-4.1-mini",
+  "name": "Chat with global news and save articles to Google Sheets with Webz.io and GPT-4.1-mini",
   "nodes": [
     {
       "parameters": {
-        "content": "## Chat with global news from Webz.io using an AI agent and GPT-4.1-mini\n\n### Who's it for\n\nResearchers, journalists, and analysts who want to interrogate current events in plain language instead of reading a fixed digest. Useful when you do not know the right query yet.\n\n### How it works\n\n1. You ask a question in the chat panel.\n2. **Answer the news question** works out which filters the question implies \u2014 language, country, date range, sentiment, category, domain, ticker, person, organization, location, topic \u2014 and searches Webz.io global news through the MCP Client Tool.\n3. **Conversation memory** keeps the thread, so you can narrow or pivot across turns without repeating yourself.\n4. The agent answers with a source URL behind every claim, and says so plainly when a search turns up nothing.\n\n### How to set up\n\n1. On **Webz.io news search**, create a **Bearer Auth** credential and paste your Webz.io API token as the bearer token.\n2. On **OpenAI Chat Model**, add your OpenAI credential.\n3. Open the chat panel at the bottom of the canvas and ask a question.\n\n### Requirements\n\n- A Webz.io API token from [webz.io](https://webz.io)\n- An OpenAI API key, or any other tool-calling chat model\n\n### How to customize\n\nEdit the agent's system message to pin a beat, a language, or a set of trusted domains so you need not repeat it every turn. Swap **Conversation memory** for Redis or Postgres memory to keep history across restarts.\n\n### Try asking\n\n- What are people saying about EU AI Act enforcement this month?\n- Find negative coverage of airline safety in the last week, English only.\n- How is NVDA being covered by yahoo.com and cnn.com since earnings?\n\n[Setup notes and full filter reference](https://github.com/Webhose/webz-news-search/blob/main/n8n/README.md)",
-        "height": 1260,
-        "width": 460
+        "content": "## Chat with global news and save articles to Google Sheets with Webz.io and GPT-4.1-mini\n\n### Who's it for\n\nResearchers, journalists, and analysts who want to interrogate current events in plain language, compare coverage across sources and countries, and keep the articles worth keeping. Useful when you do not know the right query yet.\n\n### How it works\n\n1. You ask a question in the chat panel.\n2. **Answer the news question** plans its research with the **Plan the research** Think tool, then runs one or more Webz.io searches through the MCP Client Tool — narrowing with filters such as language, country, date range, sentiment, category, domain, ticker, person, organization, and location, and cross-checking significant claims across more than one source.\n3. **Conversation memory** keeps the thread, so you can narrow or pivot across turns without repeating yourself.\n4. When you say \"save these\", the agent appends each article to your **Reading list** spreadsheet — `saved_at`, `title`, `publisher`, `url`, `note` — so a good research session leaves you with more than scrollback.\n5. The agent cites a source URL behind every claim, and says so plainly when a search turns up nothing.\n\n### How to set up\n\n1. On **Webz.io news search**, create a **Bearer Auth** credential and paste your Webz.io API token as the bearer token.\n2. On **OpenAI Chat Model**, add your OpenAI credential.\n3. On **Reading list**, connect your Google account, pick a spreadsheet and tab, and give the tab the headers `saved_at`, `title`, `publisher`, `url`, `note`.\n4. Open the chat panel at the bottom of the canvas and ask a question.\n\n### Requirements\n\n- A Webz.io API token from [webz.io](https://webz.io)\n- An OpenAI API key, or any other tool-calling chat model\n- A Google account for the reading list (or delete the **Reading list** node to chat without one)\n\n### How to customize\n\nEdit the agent's system message to pin a beat, a language, or a set of trusted domains so you need not repeat it every turn. Swap **Conversation memory** for Redis or Postgres memory to keep history across restarts, or point **Reading list** at Notion or Airtable instead.\n\n### Try asking\n\n- What are people saying about EU AI Act enforcement this month?\n- Compare how US and UK outlets covered the latest Fed decision.\n- Find negative coverage of airline safety in the last week, English only, then save the three most serious to my reading list.\n\n[Setup notes and full filter reference](https://github.com/Webhose/webz-news-search/blob/main/n8n/README.md)",
+        "height": 1620,
+        "width": 480
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -780,
-        -260
+        -840,
+        -320
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000006",
       "name": "Template overview"
@@ -34,7 +34,7 @@
     },
     {
       "parameters": {
-        "content": "### 2. The research agent\n\nIt picks the filters your question implies, searches, and cites a URL for every claim.\n\nEdit the system message to pin a beat, a language, or a set of trusted domains.",
+        "content": "### 2. The research agent\n\nIt plans with the Think tool, runs as many searches as the question needs, compares coverage across sources, and cites a URL for every claim.\n\nSay \"save these\" and it appends the articles to your reading list.\n\nEdit the system message to pin a beat, a language, or a set of trusted domains.",
         "height": 520,
         "width": 280,
         "color": 7
@@ -50,16 +50,16 @@
     },
     {
       "parameters": {
-        "content": "### 3. Model, memory, and the search tool\n\n**Webz.io news search** needs a *Bearer Auth* credential holding your Webz.io API token. Leave *Tools to Include* set to **All** \u2014 the server exposes a single tool.\n\n**OpenAI Chat Model** needs your OpenAI key, or swap the node for any other tool-calling model. **Conversation memory** keeps the thread within a session; use Redis or Postgres memory to survive restarts.",
-        "height": 340,
-        "width": 620,
+        "content": "### 3. Model, memory, and three tools\n\n**OpenAI Chat Model** needs your OpenAI key, or swap the node for any other tool-calling model. **Conversation memory** keeps the thread within a session; use Redis or Postgres memory to survive restarts.\n\n**Plan the research** is a Think tool: it gives the agent scratch space to choose angles and filters before spending search credits.\n\n**Webz.io news search** needs a *Bearer Auth* credential holding your Webz.io API token. Leave *Tools to Include* set to **All** \u2014 the server exposes a single tool.\n\n**Reading list** needs a Google Sheets credential plus a spreadsheet with the headers `saved_at`, `title`, `publisher`, `url`, `note`. The agent only writes to it when you explicitly ask to save. Delete the node to chat without it.",
+        "height": 420,
+        "width": 900,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -140,
-        300
+        -260,
+        320
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000009",
       "name": "Step 3 note"
@@ -83,7 +83,7 @@
       "parameters": {
         "promptType": "auto",
         "options": {
-          "systemMessage": "You are a news research assistant with access to Webz.io global news search.\n\nAlways search before you answer. Never rely on your own knowledge of current events, and never invent an article, a publisher, or a URL. Report only what the tool returns.\n\nThe search tool accepts filters, so use them rather than stuffing keywords into the query. Useful ones are days, language, country, sentiment, category, domain, exclude_domain, ticker, person, organization, location, and topic, plus k to control how many results come back.\n\nFilter value formats matter: language takes full names such as english or french, country takes uppercase ISO-2 codes such as US or DE, and ticker takes uppercase symbols such as NVDA. Omitting days searches the last 7 days.\n\nWhen a question is vague, run a broad search first and then narrow with filters based on what comes back. If a search using category or sentiment returns nothing, retry once without those filters before giving up.\n\nCite the URL for every claim. If the search turns up nothing relevant, say so and suggest a different angle instead of guessing."
+          "systemMessage": "You are a news research assistant with access to Webz.io global news search, a think tool for planning, and the user's reading list spreadsheet.\n\n## Research method\n\nBefore the first search on any non-trivial question, use the think tool to plan: what angles matter, which filters narrow the noise, and what would confirm or contradict the obvious answer. Then search — more than once when the question calls for it. Comparing countries, outlets, or time periods means one search per side, not one blended search.\n\nAlways search before you answer. Never rely on your own knowledge of current events, and never invent an article, a publisher, or a URL. Report only what the tool returns, and cross-check significant claims across at least two different source domains when coverage allows.\n\n## Using the search tool\n\nThe search tool accepts filters, so use them rather than stuffing keywords into the query. Useful ones are days, language, country, sentiment, category, domain, exclude_domain, ticker, person, organization, location, and topic, plus k to control how many results come back.\n\nFilter value formats matter: language takes full names such as english or french, country takes uppercase ISO-2 codes such as US or DE, and ticker takes uppercase symbols such as NVDA. Omitting days searches the last 7 days.\n\nPut the subject in the query argument, not in the topic filter. When a question is vague, run a broad search first and then narrow with filters based on what comes back. If a search using category or sentiment returns nothing, retry once without those filters before giving up.\n\n## The reading list\n\nOnly write to the reading list when the user explicitly asks to save something. Call the tool once per article, with the exact title, publisher, and URL from the search results and a one-sentence note on why it was saved. Confirm what was saved afterwards.\n\n## Answering\n\nCite the URL for every claim. Point out when sources disagree instead of averaging them. If the search turns up nothing relevant, say so and suggest a different angle instead of guessing."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -111,7 +111,7 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -60,
+        -220,
         500
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000003",
@@ -122,11 +122,24 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.4,
       "position": [
-        140,
+        -40,
         500
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000004",
       "name": "Conversation memory"
+    },
+    {
+      "parameters": {
+        "description": "Scratch space for planning. Use it before the first news search on any non-trivial question to decide which angles to research, which filters to apply, and what would confirm or contradict the obvious answer. Also use it after surprising results to decide whether a follow-up search is needed. It performs no action and returns nothing."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        140,
+        500
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000a",
+      "name": "Plan the research"
     },
     {
       "parameters": {
@@ -138,11 +151,97 @@
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.4,
       "position": [
-        340,
+        320,
         500
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000005",
       "name": "Webz.io news search"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append one article to the user's reading list spreadsheet. Call once per article, only when the user explicitly asks to save articles. Pass the exact title, publisher, and URL from the search results, plus a one-sentence note on why it was saved.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "saved_at": "={{ $now.toISO() }}",
+            "title": "={{ $fromAI('title', 'The article headline, exactly as returned by the news search', 'string') }}",
+            "publisher": "={{ $fromAI('publisher', 'The publisher or source domain of the article', 'string') }}",
+            "url": "={{ $fromAI('url', 'The article URL, exactly as returned by the news search', 'string') }}",
+            "note": "={{ $fromAI('note', 'One sentence on why this article was saved', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "saved_at",
+              "displayName": "saved_at",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publisher",
+              "displayName": "publisher",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        500,
+        500
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000b",
+      "name": "Reading list"
     }
   ],
   "connections": {
@@ -179,7 +278,29 @@
         ]
       ]
     },
+    "Plan the research": {
+      "ai_tool": [
+        [
+          {
+            "node": "Answer the news question",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Webz.io news search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Answer the news question",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reading list": {
       "ai_tool": [
         [
           {

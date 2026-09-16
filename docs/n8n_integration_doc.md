@@ -163,9 +163,9 @@ Four workflows are available in [`n8n/templates`](https://github.com/Webhose/web
 | Template | What it does | Integration |
 | --- | --- | --- |
 | [`news-to-sheet.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/news-to-sheet.json) | Manual search that appends structured article rows to Google Sheets | Community node |
-| [`daily-news-digest-slack.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/daily-news-digest-slack.json) | Runs every morning at 08:00, searches the last 24 hours on a topic, and posts a sourced digest to Slack | MCP Client Tool |
-| [`ticker-monitor.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/ticker-monitor.json) | Checks a stock ticker every 6 hours and alerts Slack only when something material turns up | MCP Client Tool |
-| [`news-research-agent.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/news-research-agent.json) | Chat interface for interactive news research, with conversation memory | MCP Client Tool |
+| [`daily-news-digest-slack.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/daily-news-digest-slack.json) | Every morning at 08:00, runs one search per topic on a list, dedupes across topics, posts one sourced digest to Slack, and archives every story to Google Sheets | MCP Client Tool |
+| [`ticker-monitor.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/ticker-monitor.json) | Checks a ticker watchlist every 6 hours, keeps only material stories tagged by event type, remembers what it already alerted on, and pings Slack only with genuinely new news | MCP Client Tool |
+| [`news-research-agent.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/news-research-agent.json) | Chat interface for interactive news research with conversation memory, a Think tool for planning, and a Google Sheets reading list filled on request | MCP Client Tool |
 
 ### Configuring a template
 
@@ -174,10 +174,16 @@ Every template keeps its adjustable values in one settings node, so you should n
 | Template | Settings node | Fields |
 | --- | --- | --- |
 | `news-to-sheet.json` | **Search settings** | `query`, `articleCount`, `lookbackDays` |
-| `daily-news-digest-slack.json` | **Digest settings** | `searchQuery`, `lookbackDays`, `articleCount`, `slackChannel` |
-| `ticker-monitor.json` | **Monitor settings** | `ticker`, `lookbackDays`, `articleCount`, `slackChannel` |
+| `daily-news-digest-slack.json` | **Digest settings** | `searchTopics` (comma-separated list), `lookbackDays`, `articleCount`, `slackChannel` |
+| `ticker-monitor.json` | **Monitor settings** | `tickers` (comma-separated list, uppercase), `lookbackDays`, `articleCount`, `slackChannel` |
 
-`news-to-sheet.json` picks the destination spreadsheet on the Google Sheets node itself rather than from the settings node. Choose your spreadsheet and tab there, and give the tab the column headers `title`, `url`, `published`, `score`, `excerpt`, and `query`.
+Destination spreadsheets are picked on the Google Sheets nodes themselves rather than from the settings node. Choose your spreadsheet and tab there, and give the tab these column headers:
+
+| Template | Sheets node | Headers |
+| --- | --- | --- |
+| `news-to-sheet.json` | **Append articles to sheet** | `title`, `url`, `published`, `score`, `excerpt`, `query` |
+| `daily-news-digest-slack.json` | **Archive stories to Google Sheets** | `date`, `topic`, `headline`, `publisher`, `why_it_matters`, `url` |
+| `news-research-agent.json` | **Reading list** | `saved_at`, `title`, `publisher`, `url`, `note` |
 
 ### Adding credentials
 
@@ -188,7 +194,7 @@ Templates never ship credentials, so these fields arrive empty by design.
 | Search Webz.io news (community node) | **Webz.io News Search API** with your Webz.io token |
 | Webz.io news search (MCP Client Tool) | **Bearer Auth** with your Webz.io token |
 | OpenAI Chat Model | Your OpenAI key, or swap the node for any other tool-calling model |
-| Append articles to sheet | Google Sheets OAuth2 |
+| Google Sheets nodes (Append articles to sheet, Archive stories to Google Sheets, Reading list) | Google Sheets OAuth2 |
 | Slack | **Slack API** with a bot token |
 
 The three agent templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenAI-compatible provider and the rest of the workflow is unchanged.
@@ -202,7 +208,7 @@ For Slack, the bot token needs `chat:write` to post and `channels:read` to resol
 - **n8n Cloud:** set it per workflow under **Workflow Settings → Timezone**, or instance-wide in account settings
 - **Self-hosted:** set the `GENERIC_TIMEZONE` environment variable
 
-Both alerting templates guard their output, so they post only when the agent actually returns content and raise a workflow error otherwise instead of sending an empty message.
+Both alerting templates guard their output: agent responses are forced through a Structured Output Parser, quiet runs post nothing, and a failed run raises a workflow error instead of sending an empty message. The ticker monitor also remembers every URL it has alerted on (in workflow static data) so overlapping lookback windows never re-alert on the same story — note that static data persists between production runs of an active workflow, not between manual test runs.
 
 ## How it works
 
