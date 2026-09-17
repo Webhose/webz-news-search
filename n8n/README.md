@@ -55,12 +55,14 @@ Ready-made workflows are in [`templates/`](templates). In n8n, use **Import from
 | --- | --- |
 | [`daily-news-digest-slack.json`](templates/daily-news-digest-slack.json) | Every morning, runs one search per topic on your list, enforces structured stories, dedupes across topics, posts one sourced digest to Slack, and archives every story to Google Sheets |
 | [`ticker-monitor.json`](templates/ticker-monitor.json) | Checks a ticker watchlist every few hours, keeps only material stories tagged by event type, remembers every URL it already alerted on, and pings Slack only with genuinely new news |
-| [`news-research-agent.json`](templates/news-research-agent.json) | Chat interface for interactive news research with conversation memory, a Think tool for planning multi-search research, and a Google Sheets reading list it fills when you ask to save articles |
+| [`news-research-agent.json`](templates/news-research-agent.json) | Chat interface that routes each question to a cheap one-search path or a deep multi-search path, groups results into claims, counts how many independent domains carry each claim, and answers with corroborated claims first and single-source ones flagged |
 | [`news-to-sheet.json`](templates/news-to-sheet.json) | Manual or scheduled search with the community node, appending structured article rows to Google Sheets |
 
 Each workflow opens with a yellow sticky note holding the full description, plus a grey note over every step, so the canvas explains itself once imported.
 
-After importing, open the settings node — **Digest settings**, **Monitor settings**, or **Search settings** — and change the topics, tickers, or channel there. Everything you would normally want to adjust lives in that one node, so you should not need to touch the agent prompts. The digest and monitor templates take comma-separated lists, so one workflow covers a whole beat or watchlist.
+After importing, open the settings node — **Digest settings**, **Monitor settings**, **Research settings**, or **Search settings** — and change the topics, tickers, or channel there. Everything you would normally want to adjust lives in that one node, so you should not need to touch the agent prompts. The digest and monitor templates take comma-separated lists, so one workflow covers a whole beat or watchlist.
+
+The research agent's **Research settings** node is where you set the corroboration bar: `minSourcesToCorroborate` is how many *independent* domains must carry a claim before it is reported as corroborated rather than single-source. Two is a reasonable default; three is a stricter newsroom standard.
 
 Three templates write to Google Sheets. Pick the destination spreadsheet and tab on the node named below, and give the tab these column headers:
 
@@ -68,7 +70,7 @@ Three templates write to Google Sheets. Pick the destination spreadsheet and tab
 | --- | --- | --- |
 | `news-to-sheet.json` | **Append articles to sheet** | `title`, `url`, `published`, `score`, `excerpt`, `query` |
 | `daily-news-digest-slack.json` | **Archive stories to Google Sheets** | `date`, `topic`, `headline`, `publisher`, `why_it_matters`, `url` |
-| `news-research-agent.json` | **Reading list** | `saved_at`, `title`, `publisher`, `url`, `note` |
+| `news-research-agent.json` | **Archive the briefing to Google Sheets** | `saved_at`, `question`, `claim`, `status`, `source_count`, `publishers`, `urls` |
 
 Then add credentials. Templates never ship credentials, so these fields arrive empty by design:
 
@@ -77,7 +79,7 @@ Then add credentials. Templates never ship credentials, so these fields arrive e
 | Search Webz.io news (community node) | **Webz.io News Search API**, with your Webz.io API token |
 | Webz.io news search (MCP Client Tool) | **Bearer Auth**, with your Webz.io API token |
 | OpenAI Chat Model | Your OpenAI key, or replace the node with any other tool-calling model |
-| Google Sheets nodes (**Append articles to sheet**, **Archive stories to Google Sheets**, **Reading list**) | **Google Sheets OAuth2** |
+| Google Sheets nodes (**Append articles to sheet**, **Archive stories to Google Sheets**, **Archive the briefing to Google Sheets**) | **Google Sheets OAuth2** |
 | Slack (digest and ticker templates only) | **Slack API** with a bot token |
 
 For Slack, the bot token needs the `chat:write` scope to post and `channels:read` to resolve the channel name (`groups:read` as well for a private channel). Then invite the bot to the channel with `/invite @YourApp` — correct scopes with an uninvited bot returns `not_in_channel`, which looks like an auth failure but isn't.
@@ -127,6 +129,7 @@ Give me the headline, publisher, and URL for each.
 - **Self-hosted n8n needs network access** from the n8n container to `news-search-mcp.webz.io` over HTTPS.
 - **Calls use your normal API credits.** Each tool call is a regular News Search API request, with the same credits and rate limits as any other client.
 - **Name the `query` argument explicitly in prompts.** There is also a `topic` filter, and models will otherwise put the search subject there and get a validation error, since `topic` expects a list. Tell the agent to pass the subject as `query`.
+- **The research agent does not stream its reply.** Verification and formatting happen in nodes *after* the agent, so the chat panel waits for the whole pipeline and then shows the composed briefing from **Reply with the briefing**. Streaming would have to bypass those steps, which is the opposite of the point.
 - **A tool failure looks like an empty result.** The agent catches tool errors and answers as though nothing was found, so a broken credential shows up as "no news" rather than a failed run. If a scheduled workflow goes quiet, open a recent execution and check the MCP node for a tool error.
 
 ## Links
