@@ -165,7 +165,7 @@ Four workflows are available in [`n8n/templates`](https://github.com/Webhose/web
 | [`news-to-sheet.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/news-to-sheet.json) | Manual search that appends structured article rows to Google Sheets | Community node |
 | [`daily-news-digest-slack.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/daily-news-digest-slack.json) | Every morning at 08:00, runs one search per topic on a list, dedupes across topics, posts one sourced digest to Slack, and archives every story to Google Sheets | MCP Client Tool |
 | [`ticker-monitor.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/ticker-monitor.json) | Checks a ticker watchlist every 6 hours, keeps only material stories tagged by event type, remembers what it already alerted on, and pings Slack only with genuinely new news | MCP Client Tool |
-| [`news-research-agent.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/news-research-agent.json) | Chat interface for interactive news research with conversation memory, a Think tool for planning, and a Google Sheets reading list filled on request | MCP Client Tool |
+| [`news-research-agent.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/news-research-agent.json) | Chat interface that routes each question to a quick or deep research path, then counts how many independent domains carry each claim and marks it corroborated or single-source before answering and archiving to Google Sheets | MCP Client Tool |
 
 ### Configuring a template
 
@@ -176,6 +176,7 @@ Every template keeps its adjustable values in one settings node, so you should n
 | `news-to-sheet.json` | **Search settings** | `query`, `articleCount`, `lookbackDays` |
 | `daily-news-digest-slack.json` | **Digest settings** | `searchTopics` (comma-separated list), `lookbackDays`, `articleCount`, `slackChannel` |
 | `ticker-monitor.json` | **Monitor settings** | `tickers` (comma-separated list, uppercase), `lookbackDays`, `articleCount`, `slackChannel` |
+| `news-research-agent.json` | **Research settings** | `defaultLanguage`, `lookbackDays`, `minSourcesToCorroborate`, `maxFindings` |
 
 Destination spreadsheets are picked on the Google Sheets nodes themselves rather than from the settings node. Choose your spreadsheet and tab there, and give the tab these column headers:
 
@@ -183,7 +184,7 @@ Destination spreadsheets are picked on the Google Sheets nodes themselves rather
 | --- | --- | --- |
 | `news-to-sheet.json` | **Append articles to sheet** | `title`, `url`, `published`, `score`, `excerpt`, `query` |
 | `daily-news-digest-slack.json` | **Archive stories to Google Sheets** | `date`, `topic`, `headline`, `publisher`, `why_it_matters`, `url` |
-| `news-research-agent.json` | **Reading list** | `saved_at`, `title`, `publisher`, `url`, `note` |
+| `news-research-agent.json` | **Archive the briefing to Google Sheets** | `saved_at`, `question`, `claim`, `status`, `source_count`, `publishers`, `urls` |
 
 ### Adding credentials
 
@@ -194,7 +195,7 @@ Templates never ship credentials, so these fields arrive empty by design.
 | Search Webz.io news (community node) | **Webz.io News Search API** with your Webz.io token |
 | Webz.io news search (MCP Client Tool) | **Bearer Auth** with your Webz.io token |
 | OpenAI Chat Model | Your OpenAI key, or swap the node for any other tool-calling model |
-| Google Sheets nodes (Append articles to sheet, Archive stories to Google Sheets, Reading list) | Google Sheets OAuth2 |
+| Google Sheets nodes (Append articles to sheet, Archive stories to Google Sheets, Archive the briefing to Google Sheets) | Google Sheets OAuth2 |
 | Slack | **Slack API** with a bot token |
 
 The three agent templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenAI-compatible provider and the rest of the workflow is unchanged.

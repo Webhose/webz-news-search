@@ -1,99 +1,273 @@
 {
-  "name": "Chat with global news and save articles to Google Sheets with Webz.io and GPT-4.1-mini",
+  "name": "Cross-check global news by chat with Webz.io, GPT-4.1-mini and Google Sheets",
   "nodes": [
     {
       "parameters": {
-        "content": "## Chat with global news and save articles to Google Sheets with Webz.io and GPT-4.1-mini\n\n### Who's it for\n\nResearchers, journalists, and analysts who want to interrogate current events in plain language, compare coverage across sources and countries, and keep the articles worth keeping. Useful when you do not know the right query yet.\n\n### How it works\n\n1. You ask a question in the chat panel.\n2. **Answer the news question** plans its research with the **Plan the research** Think tool, then runs one or more Webz.io searches through the MCP Client Tool — narrowing with filters such as language, country, date range, sentiment, category, domain, ticker, person, organization, and location, and cross-checking significant claims across more than one source.\n3. **Conversation memory** keeps the thread, so you can narrow or pivot across turns without repeating yourself.\n4. When you say \"save these\", the agent appends each article to your **Reading list** spreadsheet — `saved_at`, `title`, `publisher`, `url`, `note` — so a good research session leaves you with more than scrollback.\n5. The agent cites a source URL behind every claim, and says so plainly when a search turns up nothing.\n\n### How to set up\n\n1. On **Webz.io news search**, create a **Bearer Auth** credential and paste your Webz.io API token as the bearer token.\n2. On **OpenAI Chat Model**, add your OpenAI credential.\n3. On **Reading list**, connect your Google account, pick a spreadsheet and tab, and give the tab the headers `saved_at`, `title`, `publisher`, `url`, `note`.\n4. Open the chat panel at the bottom of the canvas and ask a question.\n\n### Requirements\n\n- A Webz.io API token from [webz.io](https://webz.io)\n- An OpenAI API key, or any other tool-calling chat model\n- A Google account for the reading list (or delete the **Reading list** node to chat without one)\n\n### How to customize\n\nEdit the agent's system message to pin a beat, a language, or a set of trusted domains so you need not repeat it every turn. Swap **Conversation memory** for Redis or Postgres memory to keep history across restarts, or point **Reading list** at Notion or Airtable instead.\n\n### Try asking\n\n- What are people saying about EU AI Act enforcement this month?\n- Compare how US and UK outlets covered the latest Fed decision.\n- Find negative coverage of airline safety in the last week, English only, then save the three most serious to my reading list.\n\n[Setup notes and full filter reference](https://github.com/Webhose/webz-news-search/blob/main/n8n/README.md)",
-        "height": 1620,
-        "width": 480
+        "content": "## Cross-check global news by chat with Webz.io, GPT-4.1-mini and Google Sheets\n\n### Who's it for\n\nJournalists, analysts, and researchers who need to know not just *what* is being reported but *how well sourced it is*. A chatbot that confidently repeats a single outlet is worse than no chatbot. This one separates claims carried by several independent newsrooms from claims resting on one.\n\n### How it works\n\n1. You ask a question in the chat panel.\n2. **Route by research depth** classifies it. A simple lookup takes the cheap one-search path; a comparative or analytical question takes the deep path, where the agent plans with a Think tool and runs one Webz.io search per angle.\n3. Either way the agent returns **claims**, each with the articles that support it, through a Structured Output Parser.\n4. **Check source corroboration** is where the real work happens: it resolves every article URL to a registrable domain, collapses duplicate outlets, counts how many *independent* domains carry each claim, and labels it `corroborated` or `single-source` against your threshold.\n5. **Compose the sourced briefing** renders the reply with corroborated claims first, every outlet linked, and a footer counting domains and countries so you can see the spread at a glance.\n6. Each claim is archived to Google Sheets with its status and source count, giving you an audit trail of what was checked and how well.\n7. When a search comes back empty, the workflow answers with concrete next angles instead of guessing.\n\n### How to set up\n\n1. On **Webz.io news search**, create a **Bearer Auth** credential holding your Webz.io API token.\n2. On **OpenAI Chat Model**, add your OpenAI credential.\n3. On **Archive the briefing to Google Sheets**, connect your Google account and pick a spreadsheet and tab with the headers `saved_at`, `question`, `claim`, `status`, `source_count`, `publishers`, `urls`.\n4. Open **Research settings** and set your language, lookback window, and corroboration threshold.\n5. Open the chat panel at the bottom of the canvas and ask away.\n\n### Requirements\n\n- A Webz.io API token from [webz.io](https://webz.io)\n- An OpenAI API key, or any other tool-calling chat model\n- A Google account for the archive (delete that node to chat without one — n8n reconnects the chain)\n\n### How to customize\n\nEverything you would normally tune lives in **Research settings**: raise `minSourcesToCorroborate` to 3 for a stricter bar, widen `lookbackDays`, or change `defaultLanguage`. Swap **Conversation memory** for Redis or Postgres memory to keep history across restarts, and point the archive at Notion or Airtable instead of Sheets.\n\n### Try asking\n\n- What is actually confirmed about the latest EU AI Act enforcement action?\n- Compare how US and German outlets are covering the ECB rate decision.\n- Is the reported Nvidia supply deal confirmed by more than one outlet?\n\n[Setup notes and full filter reference](https://github.com/Webhose/webz-news-search/blob/main/n8n/README.md)",
+        "height": 1560,
+        "width": 460
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -840,
-        -320
+        -1600,
+        -360
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000006",
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b1",
       "name": "Template overview"
     },
     {
       "parameters": {
-        "content": "### 1. Ask a question\n\nOpen the chat panel at the bottom of the canvas and type in plain language.\n\nAdd a **Chat Trigger** webhook later if you want to embed this on a site.",
-        "height": 520,
-        "width": 220,
+        "content": "### 1. Ask a question\n\nOpen the chat panel at the bottom of the canvas and type in plain language.\n\n**Research settings** holds every value you might want to change — language, lookback window, how many independent outlets a claim needs before it counts as corroborated, and how many claims to report. Nothing else in the workflow needs editing.\n\nAdd a Chat Trigger webhook later if you want to embed this on a site.",
+        "height": 660,
+        "width": 400,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -280,
-        -260
+        -1100,
+        -280
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000007",
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b2",
       "name": "Step 1 note"
     },
     {
       "parameters": {
-        "content": "### 2. The research agent\n\nIt plans with the Think tool, runs as many searches as the question needs, compares coverage across sources, and cites a URL for every claim.\n\nSay \"save these\" and it appends the articles to your reading list.\n\nEdit the system message to pin a beat, a language, or a set of trusted domains.",
-        "height": 520,
-        "width": 280,
+        "content": "### 2. Route by depth\n\nNot every question deserves the same spend.\n\n\"What happened with X?\" gets one search. \"Compare how the US and Germany covered X\" gets the planning path with several searches.\n\nThe classifier keeps the cheap path cheap.",
+        "height": 660,
+        "width": 240,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -20,
-        -260
+        -680,
+        -280
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000008",
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b3",
       "name": "Step 2 note"
     },
     {
       "parameters": {
-        "content": "### 3. Model, memory, and three tools\n\n**OpenAI Chat Model** needs your OpenAI key, or swap the node for any other tool-calling model. **Conversation memory** keeps the thread within a session; use Redis or Postgres memory to survive restarts.\n\n**Plan the research** is a Think tool: it gives the agent scratch space to choose angles and filters before spending search credits.\n\n**Webz.io news search** needs a *Bearer Auth* credential holding your Webz.io API token. Leave *Tools to Include* set to **All** \u2014 the server exposes a single tool.\n\n**Reading list** needs a Google Sheets credential plus a spreadsheet with the headers `saved_at`, `title`, `publisher`, `url`, `note`. The agent only writes to it when you explicitly ask to save. Delete the node to chat without it.",
-        "height": 420,
-        "width": 900,
+        "content": "### 3. Research\n\nBoth agents return the same shape: a list of **claims**, each with the articles supporting it.\n\nThe deep agent plans with the Think tool first and runs one search per angle — comparing two countries means two searches, not one blended one.\n\nOnly one branch runs per question.",
+        "height": 660,
+        "width": 300,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -260,
-        320
+        -415,
+        -280
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000009",
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b4",
       "name": "Step 3 note"
     },
     {
       "parameters": {
-        "options": {
-          "responseMode": "streaming"
-        }
+        "content": "### 4. Verify across sources\n\nThe part that makes this more than a chatbot.\n\nEvery article URL is resolved to its registrable domain, so three articles from one newsroom count once. Claims carried by at least `minSourcesToCorroborate` independent domains are marked **corroborated**; the rest are marked **single-source** and reported anyway, clearly flagged.\n\nA claim nobody else picked up is still worth seeing — it just should not be presented as settled.",
+        "height": 660,
+        "width": 390,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -105,
+        -280
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b5",
+      "name": "Step 4 note"
+    },
+    {
+      "parameters": {
+        "content": "### 5. Anything to report?\n\nAn empty result is a normal outcome, not a failure.",
+        "height": 660,
+        "width": 200,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        -280
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b6",
+      "name": "Step 5 note"
+    },
+    {
+      "parameters": {
+        "content": "### 6. Compose, archive, reply\n\nCorroborated claims lead the briefing, every outlet is linked, and a footer counts the domains and countries behind the answer.\n\nEach claim is then archived to Google Sheets with its status and source count — an audit trail of what was checked and how well it held up. Give the tab these headers: `saved_at`, `question`, `claim`, `status`, `source_count`, `publishers`, `urls`.\n\nNo Google account? Delete the Sheets node — n8n reconnects the chain and the chat still works.",
+        "height": 320,
+        "width": 860,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -280
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b7",
+      "name": "Step 6 note"
+    },
+    {
+      "parameters": {
+        "content": "### 7. When nothing comes back\n\nRather than guessing, the workflow suggests concrete next angles — including dropping the category and sentiment filters, which empty a result set more often than you would expect.",
+        "height": 280,
+        "width": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        80
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b8",
+      "name": "Step 7 note"
+    },
+    {
+      "parameters": {
+        "content": "### Model, memory, and tools\n\n**OpenAI Chat Model** drives the classifier and both agents — add your OpenAI key, or swap the node for any other tool-calling model. **Conversation memory** keeps the thread within a session; use Redis or Postgres memory to survive restarts.\n\n**Plan the research** is a Think tool: scratch space for choosing angles and filters before spending search credits. **Webz.io news search** needs a *Bearer Auth* credential holding your Webz.io API token — leave *Tools to Include* set to **All**, since the server exposes a single tool. **Enforce the finding format** is what guarantees every claim arrives with its sources attached, which the verification step depends on.",
+        "height": 320,
+        "width": 1000,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        400
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b9",
+      "name": "Sub-node note"
+    },
+    {
+      "parameters": {
+        "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -210,
-        120
+        -1060,
+        0
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000001",
       "name": "When chat message received"
     },
     {
       "parameters": {
-        "promptType": "auto",
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3d4e5f6-3333-4c03-9e03-0000000000f1",
+              "name": "defaultLanguage",
+              "value": "english",
+              "type": "string"
+            },
+            {
+              "id": "c3d4e5f6-3333-4c03-9e03-0000000000f2",
+              "name": "lookbackDays",
+              "value": 7,
+              "type": "number"
+            },
+            {
+              "id": "c3d4e5f6-3333-4c03-9e03-0000000000f3",
+              "name": "minSourcesToCorroborate",
+              "value": 2,
+              "type": "number"
+            },
+            {
+              "id": "c3d4e5f6-3333-4c03-9e03-0000000000f4",
+              "name": "maxFindings",
+              "value": 6,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -860,
+        0
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000002",
+      "name": "Research settings"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.chatInput }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Quick lookup",
+              "description": "A single factual question about current events that one news search can answer — what happened with one topic, company, person, or ticker, or a request for the latest coverage of one subject."
+            },
+            {
+              "category": "Deep research",
+              "description": "A question that needs several searches before it can be answered honestly — comparing countries, outlets, or time periods, tracking how a story developed, asking whether something is confirmed, or asking for analysis where claims should be checked against more than one source."
+            }
+          ]
+        },
         "options": {
-          "systemMessage": "You are a news research assistant with access to Webz.io global news search, a think tool for planning, and the user's reading list spreadsheet.\n\n## Research method\n\nBefore the first search on any non-trivial question, use the think tool to plan: what angles matter, which filters narrow the noise, and what would confirm or contradict the obvious answer. Then search — more than once when the question calls for it. Comparing countries, outlets, or time periods means one search per side, not one blended search.\n\nAlways search before you answer. Never rely on your own knowledge of current events, and never invent an article, a publisher, or a URL. Report only what the tool returns, and cross-check significant claims across at least two different source domains when coverage allows.\n\n## Using the search tool\n\nThe search tool accepts filters, so use them rather than stuffing keywords into the query. Useful ones are days, language, country, sentiment, category, domain, exclude_domain, ticker, person, organization, location, and topic, plus k to control how many results come back.\n\nFilter value formats matter: language takes full names such as english or french, country takes uppercase ISO-2 codes such as US or DE, and ticker takes uppercase symbols such as NVDA. Omitting days searches the last 7 days.\n\nPut the subject in the query argument, not in the topic filter. When a question is vague, run a broad search first and then narrow with filters based on what comes back. If a search using category or sentiment returns nothing, retry once without those filters before giving up.\n\n## The reading list\n\nOnly write to the reading list when the user explicitly asks to save something. Call the tool once per article, with the exact title, publisher, and URL from the search results and a one-sentence note on why it was saved. Confirm what was saved afterwards.\n\n## Answering\n\nCite the URL for every claim. Point out when sources disagree instead of averaging them. If the search turns up nothing relevant, say so and suggest a different angle instead of guessing."
+          "fallback": "other"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -620,
+        0
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000003",
+      "name": "Route by research depth"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Answer this question about current events: {{ $json.chatInput }}\n\nRun one Webz.io news search. Use these defaults unless the question clearly implies otherwise:\n\n- language: [\"{{ $json.defaultLanguage }}\"]\n- days: {{ $json.lookbackDays }}\n- k: 10\n\nGroup what comes back into distinct claims. For each claim, list every article that supports it, with the publisher and the exact URL the tool returned. When two outlets report the same thing, both belong under the same claim — that pairing is what makes a claim checkable further down the workflow.\n\nWrite one short paragraph of synthesis in `summary`. If the search returns nothing usable, set `no_results` to true and return an empty findings array.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a news researcher answering a straightforward question with one search.\n\nAlways search before you answer. Never rely on your own knowledge of current events, and never invent an article, a publisher, or a URL. Report only what the tool returns, and copy URLs exactly as given.\n\nPut the subject in the `query` argument. Do not put it in the `topic` filter — `topic` is a separate context-enrichment filter and expects a list, not a search subject.\n\nList-valued filters such as language, country, and ticker must be arrays, never bare strings: language must be [\"english\"], not \"english\".\n\nIf a search using category or sentiment filters returns nothing, retry once without those two filters before concluding there is no coverage.\n\nNever merge two different facts into one claim, and never split one fact across two claims. A downstream step counts how many independent outlets carry each claim, so the grouping has to be honest.",
+          "enableStreaming": false
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        80,
-        120
+        -375,
+        -120
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000002",
-      "name": "Answer the news question",
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000004",
+      "name": "Answer the quick lookup",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research this question thoroughly: {{ $json.chatInput }}\n\nStart with the think tool: decide which angles matter, which filters narrow the noise, and what evidence would contradict the obvious answer. Then run as many Webz.io searches as the question needs. Comparing countries, outlets, or time periods means one search per side, never one blended search.\n\nDefaults unless the question clearly implies otherwise:\n\n- language: [\"{{ $json.defaultLanguage }}\"]\n- days: {{ $json.lookbackDays }}\n- k: 10\n\nGroup what comes back into distinct claims. Each claim must list every article supporting it, with the publisher and the exact URL the tool returned. Aim for at least {{ $json.minSourcesToCorroborate }} independent outlets per claim. Where you cannot reach that, still report the claim with the single source you have rather than dropping it — a downstream step marks single-source claims, so being honest about thin evidence is more useful than padding.\n\nPut your synthesis in `summary`, and say explicitly where sources disagree rather than averaging them. If nothing usable comes back, set `no_results` to true and return an empty findings array.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a news researcher who treats every claim as unconfirmed until more than one newsroom carries it.\n\nBefore the first search, use the think tool to plan: what angles matter, which filters cut the noise, and what would contradict the obvious answer. Then search — more than once when the question calls for it.\n\nAlways search before you answer. Never rely on your own knowledge of current events, and never invent an article, a publisher, or a URL. Report only what the tool returns, and copy URLs exactly as given.\n\nUse filters rather than stuffing keywords into the query. Useful ones are days, language, country, sentiment, category, domain, exclude_domain, ticker, person, organization, location, and topic, plus k for how many results come back.\n\nValue formats matter: language takes full names such as english or french, country takes uppercase ISO-2 codes such as US or DE, and ticker takes uppercase symbols such as NVDA. List-valued filters must be arrays, never bare strings. Put the subject in `query`, never in `topic`.\n\nIf a search using category or sentiment returns nothing, retry once without those two filters before concluding there is no coverage.\n\nWhen grouping results into claims, never merge two different facts into one claim and never split one fact across two. Prefer sources from different newsrooms over several articles from the same one, since a downstream step counts independent domains per claim and duplicates from one outlet add nothing.",
+          "enableStreaming": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -375,
+        140
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000005",
+      "name": "Run the deep research",
       "retryOnFail": true,
       "maxTries": 2,
       "waitBetweenTries": 2000
@@ -111,10 +285,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -220,
+        -660,
         500
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000003",
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000006",
       "name": "OpenAI Chat Model"
     },
     {
@@ -122,23 +296,23 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.4,
       "position": [
-        -40,
+        -470,
         500
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000004",
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000007",
       "name": "Conversation memory"
     },
     {
       "parameters": {
-        "description": "Scratch space for planning. Use it before the first news search on any non-trivial question to decide which angles to research, which filters to apply, and what would confirm or contradict the obvious answer. Also use it after surprising results to decide whether a follow-up search is needed. It performs no action and returns nothing."
+        "description": "Scratch space for planning. Use it before the first news search to decide which angles to research, which filters to apply, and what evidence would confirm or contradict the obvious answer. Use it again after surprising results to decide whether a follow-up search is needed. It performs no action and returns nothing."
       },
       "type": "@n8n/n8n-nodes-langchain.toolThink",
       "typeVersion": 1.1,
       "position": [
-        140,
+        -280,
         500
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-00000000000a",
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000008",
       "name": "Plan the research"
     },
     {
@@ -151,16 +325,114 @@
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.4,
       "position": [
-        320,
+        -90,
         500
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-000000000005",
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000009",
       "name": "Webz.io news search"
     },
     {
       "parameters": {
-        "descriptionType": "manual",
-        "toolDescription": "Append one article to the user's reading list spreadsheet. Call once per article, only when the user explicitly asks to save articles. Pass the exact title, publisher, and URL from the search results, plus a one-sentence note on why it was saved.",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"summary\": { \"type\": \"string\" },\n    \"no_results\": { \"type\": \"boolean\" },\n    \"findings\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"claim\": { \"type\": \"string\" },\n          \"sources\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"publisher\": { \"type\": \"string\" },\n                \"url\": { \"type\": \"string\" },\n                \"country\": { \"type\": \"string\" },\n                \"published\": { \"type\": \"string\" }\n              },\n              \"required\": [\"publisher\", \"url\"]\n            }\n          }\n        },\n        \"required\": [\"claim\", \"sources\"]\n      }\n    }\n  },\n  \"required\": [\"summary\", \"no_results\", \"findings\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        100,
+        500
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000a",
+      "name": "Enforce the finding format"
+    },
+    {
+      "parameters": {
+        "numberInputs": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -65,
+        0
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000b",
+      "name": "Merge research paths"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Count how many independent newsrooms carry each claim.\n// Three articles from one outlet are one source, not three, so every URL is\n// resolved to its registrable domain before counting.\nconst settings = $('Research settings').first().json;\nconst minSources = Number(settings.minSourcesToCorroborate) || 2;\nconst maxFindings = Number(settings.maxFindings) || 6;\n\nconst domainOf = (url) => {\n  try {\n    return new URL(url).hostname.replace(/^www\\./, '').toLowerCase();\n  } catch {\n    return '';\n  }\n};\n\nconst summaries = [];\nconst raw = [];\n\nfor (const item of $input.all()) {\n  const result = item.json.output ?? item.json;\n  if (result.summary) summaries.push(result.summary);\n  for (const finding of result.findings ?? []) raw.push(finding);\n}\n\nconst seen = new Set();\nconst findings = [];\n\nfor (const finding of raw) {\n  const key = (finding.claim ?? '').trim().toLowerCase();\n  if (!key || seen.has(key)) continue;\n  seen.add(key);\n\n  const byDomain = new Map();\n  for (const source of finding.sources ?? []) {\n    const domain = domainOf(source.url);\n    if (!domain || byDomain.has(domain)) continue;\n    byDomain.set(domain, {\n      publisher: source.publisher || domain,\n      url: source.url,\n      domain,\n      country: source.country || '',\n      published: source.published || '',\n    });\n  }\n\n  const sources = [...byDomain.values()];\n  if (sources.length === 0) continue;\n\n  findings.push({\n    claim: finding.claim.trim(),\n    sources,\n    source_count: sources.length,\n    status: sources.length >= minSources ? 'corroborated' : 'single-source',\n  });\n}\n\n// Best-evidenced claims lead the briefing.\nfindings.sort((a, b) => b.source_count - a.source_count);\nconst kept = findings.slice(0, maxFindings);\n\nconst domains = new Set(kept.flatMap((f) => f.sources.map((s) => s.domain)));\nconst countries = new Set(\n  kept.flatMap((f) => f.sources.map((s) => s.country).filter(Boolean)),\n);\n\nreturn [\n  {\n    json: {\n      question: settings.chatInput ?? '',\n      summary: summaries.join(' '),\n      findings: kept,\n      stats: {\n        finding_count: kept.length,\n        corroborated: kept.filter((f) => f.status === 'corroborated').length,\n        single_source: kept.filter((f) => f.status === 'single-source').length,\n        domain_count: domains.size,\n        country_count: countries.size,\n        min_sources: minSources,\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        135,
+        0
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000c",
+      "name": "Check source corroboration"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c3d4e5f6-3333-4c03-9e03-0000000000c1",
+              "leftValue": "={{ $json.stats.finding_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        345,
+        0
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000d",
+      "name": "Any claims to report?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Render the verified claims as a chat reply, and flatten the same claims\n// into one row each for the Google Sheets audit trail.\nconst { question, summary, findings, stats } = $input.first().json;\n\nconst lines = [];\nif (summary) lines.push(summary, '');\n\nfindings.forEach((finding, index) => {\n  const outlets = finding.source_count === 1 ? 'outlet' : 'independent outlets';\n  const label =\n    finding.status === 'corroborated'\n      ? `Corroborated — ${finding.source_count} ${outlets}`\n      : `Single source — not confirmed elsewhere`;\n\n  lines.push(`**${index + 1}. ${finding.claim}**`);\n  lines.push(`_${label}_`);\n  for (const source of finding.sources) {\n    lines.push(`- [${source.publisher}](${source.url})`);\n  }\n  lines.push('');\n});\n\nconst spread = [`${stats.domain_count} domains`];\nif (stats.country_count) spread.push(`${stats.country_count} countries`);\nlines.push(\n  `_Source spread: ${spread.join(', ')}. ${stats.corroborated} of ${stats.finding_count} claims met the ${stats.min_sources}-source bar._`,\n);\n\nif (stats.single_source > 0) {\n  const plural = stats.single_source === 1 ? 'claim rests' : 'claims rest';\n  lines.push(\n    `_${stats.single_source} ${plural} on a single outlet — treat as unconfirmed._`,\n  );\n}\n\nconst savedAt = new Date().toISOString();\n\nreturn [\n  {\n    json: {\n      briefing: lines.join('\\n'),\n      question,\n      findings: findings.map((finding) => ({\n        saved_at: savedAt,\n        question,\n        claim: finding.claim,\n        status: finding.status,\n        source_count: finding.source_count,\n        publishers: finding.sources.map((s) => s.publisher).join(', '),\n        urls: finding.sources.map((s) => s.url).join(' '),\n      })),\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -120
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000e",
+      "name": "Compose the sourced briefing"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "findings",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        760,
+        -120
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-00000000000f",
+      "name": "Split out one row per claim"
+    },
+    {
+      "parameters": {
         "operation": "append",
         "documentId": {
           "__rl": true,
@@ -175,11 +447,13 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "saved_at": "={{ $now.toISO() }}",
-            "title": "={{ $fromAI('title', 'The article headline, exactly as returned by the news search', 'string') }}",
-            "publisher": "={{ $fromAI('publisher', 'The publisher or source domain of the article', 'string') }}",
-            "url": "={{ $fromAI('url', 'The article URL, exactly as returned by the news search', 'string') }}",
-            "note": "={{ $fromAI('note', 'One sentence on why this article was saved', 'string') }}"
+            "saved_at": "={{ $json.saved_at }}",
+            "question": "={{ $json.question }}",
+            "claim": "={{ $json.claim }}",
+            "status": "={{ $json.status }}",
+            "source_count": "={{ $json.source_count }}",
+            "publishers": "={{ $json.publishers }}",
+            "urls": "={{ $json.urls }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -193,8 +467,8 @@
               "canBeUsedToMatch": true
             },
             {
-              "id": "title",
-              "displayName": "title",
+              "id": "question",
+              "displayName": "question",
               "type": "string",
               "required": false,
               "defaultMatch": false,
@@ -202,8 +476,8 @@
               "canBeUsedToMatch": true
             },
             {
-              "id": "publisher",
-              "displayName": "publisher",
+              "id": "claim",
+              "displayName": "claim",
               "type": "string",
               "required": false,
               "defaultMatch": false,
@@ -211,8 +485,8 @@
               "canBeUsedToMatch": true
             },
             {
-              "id": "url",
-              "displayName": "url",
+              "id": "status",
+              "displayName": "status",
               "type": "string",
               "required": false,
               "defaultMatch": false,
@@ -220,8 +494,26 @@
               "canBeUsedToMatch": true
             },
             {
-              "id": "note",
-              "displayName": "note",
+              "id": "source_count",
+              "displayName": "source_count",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publishers",
+              "displayName": "publishers",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urls",
+              "displayName": "urls",
               "type": "string",
               "required": false,
               "defaultMatch": false,
@@ -234,14 +526,63 @@
         },
         "options": {}
       },
-      "type": "n8n-nodes-base.googleSheetsTool",
+      "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        500,
-        500
+        960,
+        -120
       ],
-      "id": "c3d4e5f6-3333-4c03-9e03-00000000000b",
-      "name": "Reading list"
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000010",
+      "name": "Archive the briefing to Google Sheets"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3d4e5f6-3333-4c03-9e03-0000000000a1",
+              "name": "output",
+              "value": "={{ $('Compose the sourced briefing').first().json.briefing }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1180,
+        -120
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000011",
+      "name": "Reply with the briefing",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3d4e5f6-3333-4c03-9e03-0000000000a2",
+              "name": "output",
+              "value": "=Nothing came back from Webz.io for that, so there is nothing I can source.\n\nSearched: \"{{ $('Research settings').first().json.chatInput }}\" over the last {{ $('Research settings').first().json.lookbackDays }} days in {{ $('Research settings').first().json.defaultLanguage }}.\n\nWorth trying:\n\n- **Widen the window.** Ask for the last 30 days instead of {{ $('Research settings').first().json.lookbackDays }}.\n- **Drop the category or sentiment angle.** Those two filters empty a result set more often than you would expect.\n- **Name the company, person, or ticker directly** rather than the theme around it.\n- **Try another language or country.** Coverage outside {{ $('Research settings').first().json.defaultLanguage }} is often filed under different terms.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        580,
+        180
+      ],
+      "id": "c3d4e5f6-3333-4c03-9e03-000000000012",
+      "name": "Suggest a different angle"
     }
   ],
   "connections": {
@@ -249,9 +590,67 @@
       "main": [
         [
           {
-            "node": "Answer the news question",
+            "node": "Research settings",
             "type": "main",
             "index": 0
+          }
+        ]
+      ]
+    },
+    "Research settings": {
+      "main": [
+        [
+          {
+            "node": "Route by research depth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by research depth": {
+      "main": [
+        [
+          {
+            "node": "Answer the quick lookup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Run the deep research",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answer the quick lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer the quick lookup": {
+      "main": [
+        [
+          {
+            "node": "Merge research paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run the deep research": {
+      "main": [
+        [
+          {
+            "node": "Merge research paths",
+            "type": "main",
+            "index": 1
           }
         ]
       ]
@@ -260,7 +659,17 @@
       "ai_languageModel": [
         [
           {
-            "node": "Answer the news question",
+            "node": "Route by research depth",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Answer the quick lookup",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Run the deep research",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -271,7 +680,12 @@
       "ai_memory": [
         [
           {
-            "node": "Answer the news question",
+            "node": "Answer the quick lookup",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Run the deep research",
             "type": "ai_memory",
             "index": 0
           }
@@ -282,7 +696,7 @@
       "ai_tool": [
         [
           {
-            "node": "Answer the news question",
+            "node": "Run the deep research",
             "type": "ai_tool",
             "index": 0
           }
@@ -293,19 +707,102 @@
       "ai_tool": [
         [
           {
-            "node": "Answer the news question",
+            "node": "Answer the quick lookup",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Run the deep research",
             "type": "ai_tool",
             "index": 0
           }
         ]
       ]
     },
-    "Reading list": {
-      "ai_tool": [
+    "Enforce the finding format": {
+      "ai_outputParser": [
         [
           {
-            "node": "Answer the news question",
-            "type": "ai_tool",
+            "node": "Answer the quick lookup",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Run the deep research",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge research paths": {
+      "main": [
+        [
+          {
+            "node": "Check source corroboration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check source corroboration": {
+      "main": [
+        [
+          {
+            "node": "Any claims to report?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any claims to report?": {
+      "main": [
+        [
+          {
+            "node": "Compose the sourced briefing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Suggest a different angle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose the sourced briefing": {
+      "main": [
+        [
+          {
+            "node": "Split out one row per claim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split out one row per claim": {
+      "main": [
+        [
+          {
+            "node": "Archive the briefing to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archive the briefing to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Reply with the briefing",
+            "type": "main",
             "index": 0
           }
         ]
