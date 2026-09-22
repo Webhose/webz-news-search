@@ -16,6 +16,15 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `n8n-nodes-webz-news-search` | npm | `packages/n8n-node` |
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
 
+## Official MCP Registry
+
+The bundle in [`mcp-registry/`](mcp-registry) publishes the hosted server to
+[registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io) as
+`io.webz/news-search`. Aggregators such as PulseMCP and Glama ingest the
+official registry, so this listing propagates downstream automatically.
+Publishing requires a one-time DNS TXT record on `webz.io` — see
+[`mcp-registry/PUBLISHING.md`](mcp-registry/PUBLISHING.md).
+
 ## Groq
 
 No package. Groq's [Responses API](https://console.groq.com/docs/tool-use/remote-mcp) speaks remote MCP itself, so you pass the hosted server in `tools` and Groq runs `tools/list` and `tools/call` server side.
