@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.webz/news-search",
+  "title": "Webz.io News Search",
+  "description": "Search global news in natural language. Filter by language, country, date, sentiment, and domain.",
+  "repository": {
+    "url": "https://github.com/Webhose/webz-news-search",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "websiteUrl": "https://docs.webz.io/docs/webz/news-search-api-mcp",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://news-search-mcp.webz.io/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer YOUR_WEBZ_TOKEN - your Webz.io API token. Clients with OAuth support (Claude.ai, ChatGPT) can connect without this header and authorize interactively instead.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
