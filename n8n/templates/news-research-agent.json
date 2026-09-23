@@ -19,15 +19,15 @@
     {
       "parameters": {
         "content": "### 1. Ask a question\n\nOpen the chat panel at the bottom of the canvas and type in plain language.\n\n**Research settings** holds every value you might want to change \u2014 language, lookback window, how many independent outlets a claim needs before it counts as corroborated, and how many claims to report. Nothing else in the workflow needs editing.\n\nAdd a Chat Trigger webhook later if you want to embed this on a site.",
-        "height": 660,
-        "width": 430,
+        "height": 560,
+        "width": 420,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1070,
-        -300
+        -1080,
+        -260
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-0000000000b2",
       "name": "Step 1 note"
@@ -35,31 +35,31 @@
     {
       "parameters": {
         "content": "### 2. Route by depth\n\nNot every question deserves the same spend.\n\n\"What happened with X?\" gets one search. \"Compare how the US and Germany covered X\" gets the planning path with several searches.\n\nThe classifier keeps the cheap path cheap.",
-        "height": 660,
-        "width": 230,
+        "height": 560,
+        "width": 240,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -620,
-        -300
+        -640,
+        -260
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-0000000000b3",
       "name": "Step 2 note"
     },
     {
       "parameters": {
-        "content": "### 3. Research\n\nBoth agents return the same shape: a list of **claims**, each with the articles supporting it.\n\nThe deep agent plans with the Think tool first and runs one search per angle \u2014 comparing two countries means two searches, not one blended one.\n\nOnly one branch runs per question.",
-        "height": 680,
-        "width": 295,
+        "content": "### 3. Research\n\nBoth agents return the same shape: a list of **claims**, each with the articles supporting it.\n\nThe deep agent plans with the Think tool first and runs one search per angle \u2014 comparing two countries means two searches, not one blended one.\n\nOnly one branch runs per question.\n\n**Credentials to add below**\n\n- **OpenAI Chat Model** drives the classifier and both agents \u2014 add your OpenAI key, or swap the node for any other tool-calling model.\n- **Conversation memory** keeps the thread within a session; use Redis or Postgres memory to survive restarts.\n- **Plan the research** is a Think tool: scratch space for choosing angles and filters before spending search credits.\n- **Webz.io news search** needs a *Bearer Auth* credential holding your Webz.io API token \u2014 leave *Tools to Include* set to **All**, since the server exposes a single tool.\n- **Enforce the finding format** guarantees every claim arrives with its sources attached, which the verification step depends on.",
+        "height": 820,
+        "width": 500,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -390,
-        -300
+        -400,
+        -340
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-0000000000b4",
       "name": "Step 3 note"
@@ -67,31 +67,31 @@
     {
       "parameters": {
         "content": "### 4. Verify across sources\n\nThe part that makes this more than a chatbot.\n\nEvery article URL is resolved to its registrable domain, so three articles from one newsroom count once. Claims carried by at least `minSourcesToCorroborate` independent domains are marked **corroborated**; the rest are marked **single-source** and reported anyway, clearly flagged.\n\nA claim nobody else picked up is still worth seeing \u2014 it just should not be presented as settled.",
-        "height": 660,
-        "width": 425,
+        "height": 560,
+        "width": 420,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -70,
-        -300
+        -120,
+        -260
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-0000000000b5",
       "name": "Step 4 note"
     },
     {
       "parameters": {
-        "content": "### 5. Anything to report?\n\nAn empty result is a normal outcome, not a failure.",
-        "height": 760,
+        "content": "### 5. Anything to report?\n\nAn empty result is a normal outcome, not a failure.\n\nWhen nothing comes back, **Suggest a different angle** replies with concrete next steps \u2014 including dropping the category and sentiment filters, which empty a result set more often than you would expect.",
+        "height": 820,
         "width": 220,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        365,
-        -300
+        280,
+        -260
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-0000000000b6",
       "name": "Step 5 note"
@@ -99,50 +99,18 @@
     {
       "parameters": {
         "content": "### 6. Compose, archive, reply\n\nCorroborated claims lead the briefing, every outlet is linked, and a footer counts the domains and countries behind the answer.\n\nEach claim is then archived to Google Sheets with its status and source count \u2014 an audit trail of what was checked and how well it held up. Give the tab these headers: `saved_at`, `question`, `claim`, `status`, `source_count`, `publishers`, `urls`.\n\nNo Google account? Delete the Sheets node \u2014 n8n reconnects the chain and the chat still works.",
-        "height": 660,
-        "width": 830,
+        "height": 560,
+        "width": 680,
         "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        605,
-        -300
+        500,
+        -260
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-0000000000b7",
       "name": "Step 6 note"
-    },
-    {
-      "parameters": {
-        "content": "### 7. When nothing comes back\n\nRather than guessing, the workflow suggests concrete next angles \u2014 including dropping the category and sentiment filters, which empty a result set more often than you would expect.",
-        "height": 220,
-        "width": 320,
-        "color": 7
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        780,
-        480
-      ],
-      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b8",
-      "name": "Step 7 note"
-    },
-    {
-      "parameters": {
-        "content": "### Model, memory, and tools\n\n**OpenAI Chat Model** drives the classifier and both agents \u2014 add your OpenAI key, or swap the node for any other tool-calling model. **Conversation memory** keeps the thread within a session; use Redis or Postgres memory to survive restarts.\n\n**Plan the research** is a Think tool: scratch space for choosing angles and filters before spending search credits. **Webz.io news search** needs a *Bearer Auth* credential holding your Webz.io API token \u2014 leave *Tools to Include* set to **All**, since the server exposes a single tool. **Enforce the finding format** is what guarantees every claim arrives with its sources attached, which the verification step depends on.",
-        "height": 280,
-        "width": 1000,
-        "color": 7
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -700,
-        380
-      ],
-      "id": "c3d4e5f6-3333-4c03-9e03-0000000000b9",
-      "name": "Sub-node note"
     },
     {
       "parameters": {
@@ -151,7 +119,7 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -1050,
+        -1060,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000001",
@@ -194,7 +162,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -850,
+        -840,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000002",
@@ -222,7 +190,7 @@
       "type": "@n8n/n8n-nodes-langchain.textClassifier",
       "typeVersion": 1.1,
       "position": [
-        -610,
+        -620,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000003",
@@ -241,8 +209,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -375,
-        20
+        -360,
+        0
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000004",
       "name": "Answer the quick lookup",
@@ -263,8 +231,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -375,
-        230
+        -360,
+        240
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000005",
       "name": "Run the deep research",
@@ -285,8 +253,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -660,
-        680
+        -540,
+        380
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000006",
       "name": "OpenAI Chat Model"
@@ -296,8 +264,8 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.4,
       "position": [
-        -470,
-        680
+        -360,
+        380
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000007",
       "name": "Conversation memory"
@@ -309,8 +277,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolThink",
       "typeVersion": 1.1,
       "position": [
-        -280,
-        680
+        -180,
+        380
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000008",
       "name": "Plan the research"
@@ -325,8 +293,8 @@
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.4,
       "position": [
-        -90,
-        680
+        0,
+        380
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000009",
       "name": "Webz.io news search"
@@ -339,8 +307,8 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        100,
-        680
+        180,
+        380
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-00000000000a",
       "name": "Enforce the finding format"
@@ -352,7 +320,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -55,
+        -100,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-00000000000b",
@@ -365,7 +333,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        145,
+        100,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-00000000000c",
@@ -398,7 +366,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        375,
+        300,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-00000000000d",
@@ -411,7 +379,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        615,
+        520,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-00000000000e",
@@ -425,7 +393,7 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        815,
+        720,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-00000000000f",
@@ -529,7 +497,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1015,
+        920,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000010",
@@ -553,7 +521,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        1215,
+        1120,
         120
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000011",
@@ -578,7 +546,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        375,
+        300,
         300
       ],
       "id": "c3d4e5f6-3333-4c03-9e03-000000000012",
