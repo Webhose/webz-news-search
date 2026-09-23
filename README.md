@@ -13,7 +13,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `ag2-webzio` | PyPI | `packages/ag2` |
 | `crewai-webzio` | PyPI | `packages/crewai` |
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
-| `n8n-nodes-webz-news-search` | npm | `packages/n8n-node` |
+| `n8n-nodes-webz-news-search` | npm | [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search) |
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
 
 ## Official MCP Registry
@@ -35,7 +35,7 @@ Reference implementation, runnable examples, and the [groq-api-cookbook](https:/
 
 Two paths:
 
-- **Community node** ([`packages/n8n-node`](packages/n8n-node)): standalone workflows, structured article output, and optional use as an AI Agent tool.
+- **Community node** ([`n8n-nodes-webz-news-search`](https://github.com/Webhose/n8n-nodes-webz-news-search)): standalone workflows, structured article output, and optional use as an AI Agent tool.
 - **Built-in MCP Client Tool** ([`n8n/`](n8n)): no install step; connect an AI Agent directly to the MCP server so filters still come from `tools/list` at runtime.
 
 Setup steps and importable workflow templates are in [`n8n/`](n8n).
