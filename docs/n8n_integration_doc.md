@@ -44,7 +44,7 @@ n8n-nodes-webz-news-search
 ```
 
 Package: [npmjs.com/package/n8n-nodes-webz-news-search](https://www.npmjs.com/package/n8n-nodes-webz-news-search)  
-Source: [github.com/Webhose/webz-news-search](https://github.com/Webhose/webz-news-search) (`packages/n8n-node`)
+Source: [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search)
 
 The node has zero runtime npm dependencies and uses only n8n's own HTTP helpers.
 
