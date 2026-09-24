@@ -57,20 +57,22 @@ Ready-made workflows are in [`templates/`](templates). In n8n, use **Import from
 | [`ticker-monitor.json`](templates/ticker-monitor.json) | Checks a ticker watchlist every few hours, keeps only material stories tagged by event type, remembers every URL it already alerted on, and pings Slack only with genuinely new news |
 | [`news-research-agent.json`](templates/news-research-agent.json) | Chat interface that routes each question to a cheap one-search path or a deep multi-search path, groups results into claims, counts how many independent domains carry each claim, and answers with corroborated claims first and single-source ones flagged |
 | [`news-to-sheet.json`](templates/news-to-sheet.json) | Manual or scheduled search with the community node, appending structured article rows to Google Sheets |
+| [`funding-rounds-tracker.json`](templates/funding-rounds-tracker.json) | Every morning, runs one search per sector on your list, extracts announced funding rounds into structured fields, dedupes by company and round, posts new rounds to Slack, and appends every new round to a Google Sheets lead list |
 
 Each workflow opens with a yellow sticky note holding the full description, plus a grey note over every step, so the canvas explains itself once imported.
 
-After importing, open the settings node — **Digest settings**, **Monitor settings**, **Research settings**, or **Search settings** — and change the topics, tickers, or channel there. Everything you would normally want to adjust lives in that one node, so you should not need to touch the agent prompts. The digest and monitor templates take comma-separated lists, so one workflow covers a whole beat or watchlist.
+After importing, open the settings node — **Digest settings**, **Monitor settings**, **Funding tracker settings**, **Research settings**, or **Search settings** — and change the topics, tickers, sectors, or channel there. Everything you would normally want to adjust lives in that one node, so you should not need to touch the agent prompts. The digest, monitor, and funding tracker templates take comma-separated lists, so one workflow covers a whole beat, watchlist, or thesis.
 
 The research agent's **Research settings** node is where you set the corroboration bar: `minSourcesToCorroborate` is how many *independent* domains must carry a claim before it is reported as corroborated rather than single-source. Two is a reasonable default; three is a stricter newsroom standard.
 
-Three templates write to Google Sheets. Pick the destination spreadsheet and tab on the node named below, and give the tab these column headers:
+Four templates write to Google Sheets. Pick the destination spreadsheet and tab on the node named below, and give the tab these column headers:
 
 | Template | Sheets node | Headers |
 | --- | --- | --- |
 | `news-to-sheet.json` | **Append articles to sheet** | `title`, `url`, `published`, `score`, `excerpt`, `query` |
 | `daily-news-digest-slack.json` | **Archive stories to Google Sheets** | `date`, `topic`, `headline`, `publisher`, `why_it_matters`, `url` |
 | `news-research-agent.json` | **Archive the briefing to Google Sheets** | `saved_at`, `question`, `claim`, `status`, `source_count`, `publishers`, `urls` |
+| `funding-rounds-tracker.json` | **Add rounds to the lead list** | `found_at`, `company`, `round_type`, `amount_usd`, `lead_investors`, `sector`, `company_description`, `headline`, `publisher`, `announced`, `url` |
 
 Then add credentials. Templates never ship credentials, so these fields arrive empty by design:
 
@@ -79,8 +81,8 @@ Then add credentials. Templates never ship credentials, so these fields arrive e
 | Search Webz.io news (community node) | **Webz.io News Search API**, with your Webz.io API token |
 | Webz.io news search (MCP Client Tool) | **Bearer Auth**, with your Webz.io API token |
 | OpenAI Chat Model | Your OpenAI key, or replace the node with any other tool-calling model |
-| Google Sheets nodes (**Append articles to sheet**, **Archive stories to Google Sheets**, **Archive the briefing to Google Sheets**) | **Google Sheets OAuth2** |
-| Slack (digest and ticker templates only) | **Slack API** with a bot token |
+| Google Sheets nodes (**Append articles to sheet**, **Archive stories to Google Sheets**, **Archive the briefing to Google Sheets**, **Add rounds to the lead list**) | **Google Sheets OAuth2** |
+| Slack (digest, ticker, and funding tracker templates) | **Slack API** with a bot token |
 
 For Slack, the bot token needs the `chat:write` scope to post and `channels:read` to resolve the channel name (`groups:read` as well for a private channel). Then invite the bot to the channel with `/invite @YourApp` — correct scopes with an uninvited bot returns `not_in_channel`, which looks like an auth failure but isn't.
 
@@ -122,8 +124,8 @@ Give me the headline, publisher, and URL for each.
 ## Things worth knowing
 
 - **Leave Tools set to `All`.** n8n has an open bug ([n8n#23421](https://github.com/n8n-io/n8n/issues/23421)) where the Bearer token is not sent to the MCP server when tool selection is narrowed to specific tools. Since the Webz.io server exposes one tool, `All` is the right setting anyway.
-- **The ticker monitor's dedup memory needs an active workflow.** It stores already-alerted URLs in workflow static data, which persists between production runs of an active workflow but not between manual test runs. Test runs may therefore repeat an alert; production runs will not.
-- **Set the timezone before trusting a schedule.** Two of the templates are scheduled and n8n defaults to UTC, so an 08:00 digest fires at 08:00 UTC until you change it. On n8n Cloud set it per workflow under **Workflow Settings → Timezone**, or instance-wide in your account settings. When self-hosting, set the `GENERIC_TIMEZONE` environment variable.
+- **The ticker monitor and funding tracker dedup memory need an active workflow.** They store already-seen URLs or company+round keys in workflow static data, which persists between production runs of an active workflow but not between manual test runs. Test runs may therefore repeat an alert or re-log a round; production runs will not.
+- **Set the timezone before trusting a schedule.** Three of the templates are scheduled and n8n defaults to UTC, so an 08:00 digest fires at 08:00 UTC until you change it. On n8n Cloud set it per workflow under **Workflow Settings → Timezone**, or instance-wide in your account settings. When self-hosting, set the `GENERIC_TIMEZONE` environment variable.
 - **The MCP Client Tool is an agent sub-node.** It cannot run on its own, so every workflow using it needs an AI Agent node and a chat model. For news search without an LLM in the loop, use the [`n8n-nodes-webz-news-search`](https://github.com/Webhose/n8n-nodes-webz-news-search) community node instead.
 - **Any tool-calling model works.** The templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenRouter-backed OpenAI-compatible node and the rest of the workflow is unchanged.
 - **Self-hosted n8n needs network access** from the n8n container to `news-search-mcp.webz.io` over HTTPS.

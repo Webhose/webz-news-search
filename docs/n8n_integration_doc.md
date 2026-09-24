@@ -158,7 +158,7 @@ The MCP Client Tool is an agent sub-node and cannot run on its own, so every wor
 
 ## Ready-made templates
 
-Four workflows are available in [`n8n/templates`](https://github.com/Webhose/webz-news-search/tree/master/n8n/templates). In n8n, use **Import from File** from the workflow menu and pick one.
+Five workflows are available in [`n8n/templates`](https://github.com/Webhose/webz-news-search/tree/master/n8n/templates). In n8n, use **Import from File** from the workflow menu and pick one.
 
 | Template | What it does | Integration |
 | --- | --- | --- |
@@ -166,6 +166,7 @@ Four workflows are available in [`n8n/templates`](https://github.com/Webhose/web
 | [`daily-news-digest-slack.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/daily-news-digest-slack.json) | Every morning at 08:00, runs one search per topic on a list, dedupes across topics, posts one sourced digest to Slack, and archives every story to Google Sheets | MCP Client Tool |
 | [`ticker-monitor.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/ticker-monitor.json) | Checks a ticker watchlist every 6 hours, keeps only material stories tagged by event type, remembers what it already alerted on, and pings Slack only with genuinely new news | MCP Client Tool |
 | [`news-research-agent.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/news-research-agent.json) | Chat interface that routes each question to a quick or deep research path, then counts how many independent domains carry each claim and marks it corroborated or single-source before answering and archiving to Google Sheets | MCP Client Tool |
+| [`funding-rounds-tracker.json`](https://github.com/Webhose/webz-news-search/blob/master/n8n/templates/funding-rounds-tracker.json) | Every morning at 08:00, runs one search per sector, extracts announced funding rounds, dedupes by company and round, posts new rounds to Slack, and appends every new round to a Google Sheets lead list | MCP Client Tool |
 
 ### Configuring a template
 
@@ -177,6 +178,7 @@ Every template keeps its adjustable values in one settings node, so you should n
 | `daily-news-digest-slack.json` | **Digest settings** | `searchTopics` (comma-separated list), `lookbackDays`, `articleCount`, `slackChannel` |
 | `ticker-monitor.json` | **Monitor settings** | `tickers` (comma-separated list, uppercase), `lookbackDays`, `articleCount`, `slackChannel` |
 | `news-research-agent.json` | **Research settings** | `defaultLanguage`, `lookbackDays`, `minSourcesToCorroborate`, `maxFindings` |
+| `funding-rounds-tracker.json` | **Funding tracker settings** | `sectors` (comma-separated list), `stages`, `minAmountUsd`, `lookbackDays`, `articleCount`, `slackChannel` |
 
 Destination spreadsheets are picked on the Google Sheets nodes themselves rather than from the settings node. Choose your spreadsheet and tab there, and give the tab these column headers:
 
@@ -185,6 +187,7 @@ Destination spreadsheets are picked on the Google Sheets nodes themselves rather
 | `news-to-sheet.json` | **Append articles to sheet** | `title`, `url`, `published`, `score`, `excerpt`, `query` |
 | `daily-news-digest-slack.json` | **Archive stories to Google Sheets** | `date`, `topic`, `headline`, `publisher`, `why_it_matters`, `url` |
 | `news-research-agent.json` | **Archive the briefing to Google Sheets** | `saved_at`, `question`, `claim`, `status`, `source_count`, `publishers`, `urls` |
+| `funding-rounds-tracker.json` | **Add rounds to the lead list** | `found_at`, `company`, `round_type`, `amount_usd`, `lead_investors`, `sector`, `company_description`, `headline`, `publisher`, `announced`, `url` |
 
 ### Adding credentials
 
@@ -195,21 +198,21 @@ Templates never ship credentials, so these fields arrive empty by design.
 | Search Webz.io news (community node) | **Webz.io News Search API** with your Webz.io token |
 | Webz.io news search (MCP Client Tool) | **Bearer Auth** with your Webz.io token |
 | OpenAI Chat Model | Your OpenAI key, or swap the node for any other tool-calling model |
-| Google Sheets nodes (Append articles to sheet, Archive stories to Google Sheets, Archive the briefing to Google Sheets) | Google Sheets OAuth2 |
+| Google Sheets nodes (Append articles to sheet, Archive stories to Google Sheets, Archive the briefing to Google Sheets, Add rounds to the lead list) | Google Sheets OAuth2 |
 | Slack | **Slack API** with a bot token |
 
-The three agent templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenAI-compatible provider and the rest of the workflow is unchanged.
+The four agent templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenAI-compatible provider and the rest of the workflow is unchanged.
 
 For Slack, the bot token needs `chat:write` to post and `channels:read` to resolve the channel name, plus `groups:read` for a private channel. Then invite the bot with `/invite @YourApp`. Correct scopes with an uninvited bot returns `not_in_channel`, which looks like an auth failure but is not.
 
 ### Scheduled templates and timezones
 
-`daily-news-digest-slack.json` and `ticker-monitor.json` are scheduled, and n8n defaults to UTC. An 08:00 digest fires at 08:00 UTC until you change it.
+`daily-news-digest-slack.json`, `ticker-monitor.json`, and `funding-rounds-tracker.json` are scheduled, and n8n defaults to UTC. An 08:00 digest fires at 08:00 UTC until you change it.
 
 - **n8n Cloud:** set it per workflow under **Workflow Settings → Timezone**, or instance-wide in account settings
 - **Self-hosted:** set the `GENERIC_TIMEZONE` environment variable
 
-Both alerting templates guard their output: agent responses are forced through a Structured Output Parser, quiet runs post nothing, and a failed run raises a workflow error instead of sending an empty message. The ticker monitor also remembers every URL it has alerted on (in workflow static data) so overlapping lookback windows never re-alert on the same story — note that static data persists between production runs of an active workflow, not between manual test runs.
+All three alerting templates guard their output: agent responses are forced through a Structured Output Parser, quiet runs post nothing, and a failed run raises a workflow error instead of sending an empty message. The ticker monitor remembers every URL it has alerted on, and the funding tracker remembers every company+round key it has logged (both in workflow static data) so overlapping lookback windows never re-alert on the same story or re-log the same round — note that static data persists between production runs of an active workflow, not between manual test runs.
 
 ## How it works
 
