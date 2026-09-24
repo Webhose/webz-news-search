@@ -1,0 +1,16 @@
+---
+description: n8n template canvas review comments for PRs under n8n/templates/
+globs: n8n/templates/**
+alwaysApply: false
+---
+
+# n8n template PRs
+
+Full comments: `.cursor/n8n_templates_prs.md`.
+
+- Layout-only PRs: positions and sticky text only. No connection, prompt, or logic changes.
+- One-agent templates (ticker-monitor, digest, funding-rounds-tracker): sub-nodes at y=380 under the agent. Do not copy the research agent's y=600 three-row layout — it leaves a hole and dangling connectors.
+- Two-agent template (news-research-agent): main y=120, deep agent y=360, sub-nodes y=600.
+- Step stickies start at y=-260. Nodes sit at y=120. Sticky **text** must end above ~y=100 or n8n paints the node over the last lines.
+- Credentials go in a text-only Sub-node note beside the sub-node row, not inside Step 3.
+- No sticky-to-sticky overlap. Import into local n8n and look before calling it done.
