@@ -50,7 +50,7 @@
     },
     {
       "parameters": {
-        "content": "### 3. One judgement per ticker, structured output\n\n**One item per ticker** validates the symbols and fans the watchlist out, and the agent runs once per ticker.\n\nIt searches Webz.io news for that ticker and keeps only market-moving stories: earnings, guidance, regulatory action, partnerships, supply chain, executive changes, rating changes. The **Structured Output Parser** forces each story into `headline`, `publisher`, `event_type`, `summary`, `url`.\n\n**Credentials to add below**\n\n- **Webz.io news search**: a *Bearer Auth* credential holding your Webz.io API token\n- **OpenAI Chat Model**: your OpenAI key, or swap the node for any other tool-calling model\n\nLeave *Tools to Include* set to **All** \u2014 the server exposes a single tool.",
+        "content": "### 3. One judgement per ticker, structured output\n\n**One item per ticker** validates the symbols and fans the watchlist out, and the agent runs once per ticker.\n\nIt searches Webz.io news for that ticker and keeps only market-moving stories: earnings, guidance, regulatory action, partnerships, supply chain, executive changes, rating changes. The **Structured Output Parser** forces each story into `headline`, `publisher`, `event_type`, `summary`, `url`.",
         "height": 820,
         "width": 460,
         "color": 7
@@ -66,7 +66,7 @@
     },
     {
       "parameters": {
-        "content": "### 4. Never alert twice, fail loudly\n\n**Drop stories already alerted** keeps the URLs of past alerts in workflow static data and discards repeats, so overlapping lookback windows do not re-ping the channel. Static data persists between production runs of an **active** workflow, not between manual test runs.\n\nA failed ticker run is routed to **Report the failure** and stops the workflow with a readable error instead of staying silent.",
+        "content": "### 4. Never alert twice, fail loudly\n\n**Drop stories already alerted** remembers past alert URLs in workflow static data, so overlapping lookback windows do not re-ping the channel. The memory persists between production runs of an **active** workflow, not manual test runs.\n\nA failed run stops at **Report the failure** with a readable error instead of staying silent.",
         "height": 820,
         "width": 260,
         "color": 7
@@ -323,6 +323,22 @@
       ],
       "id": "b2e3d4c5-2222-4b02-9d02-000000000006",
       "name": "Send the alert to Slack"
+    },
+    {
+      "parameters": {
+        "content": "### Model and tools\n\n- **OpenAI Chat Model** drives the agent \u2014 add your OpenAI key, or swap it for any other tool-calling model\n- **Webz.io news search** needs a *Bearer Auth* credential holding your Webz.io API token \u2014 leave *Tools to Include* set to **All**\n- **Enforce the alert format** guarantees every material story arrives with headline, publisher, event_type, summary, and url",
+        "height": 340,
+        "width": 480,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        340
+      ],
+      "id": "b2e3d4c5-2222-4b02-9d02-000000000013",
+      "name": "Sub-node note"
     }
   ],
   "connections": {
