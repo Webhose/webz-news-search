@@ -66,7 +66,7 @@
     },
     {
       "parameters": {
-        "content": "### 4. Never alert twice, fail loudly\n\n**Drop stories already alerted** keeps the URLs of past alerts in workflow static data and discards repeats, so overlapping lookback windows do not re-ping the channel. Static data persists between production runs of an **active** workflow, not between manual test runs.\n\nA failed ticker run is routed to **Report the failure** and stops the workflow with a readable error instead of staying silent.",
+        "content": "### 4. Never alert twice, fail loudly\n\n**Drop stories already alerted** remembers past alert URLs in workflow static data, so overlapping lookback windows do not re-ping the channel. The memory persists between production runs of an **active** workflow, not manual test runs.\n\nA failed run stops at **Report the failure** with a readable error instead of staying silent.",
         "height": 820,
         "width": 260,
         "color": 7
