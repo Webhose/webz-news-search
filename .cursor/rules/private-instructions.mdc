@@ -1,0 +1,18 @@
+---
+description: Load private webz-news-search-instructions for every agent run
+alwaysApply: true
+---
+
+# Private instructions
+
+This repo is public. Docs, packages, and n8n templates stay here. Binding agent instructions live in the sibling repo `webz-news-search-instructions`, linked at `.cursor/instructions`.
+
+Follow the files below. Do not copy them into this repository.
+
+If a linked file does not load, read it from `../webz-news-search-instructions/` before editing. The checkout layout is one parent directory with `webz-news-search` and `webz-news-search-instructions` side by side.
+
+@.cursor/instructions/AGENTS.md
+@.cursor/instructions/context.md
+@.cursor/instructions/upstream-prs.md
+@.cursor/instructions/n8n-templates.md
+@.cursor/instructions/n8n-demo-video.md

@@ -285,5 +285,6 @@ Allow outbound HTTPS from the n8n container to `news-search-mcp.webz.io`.
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [n8n MCP Client Tool node](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolmcp)
 - [npm: n8n-nodes-webz-news-search](https://www.npmjs.com/package/n8n-nodes-webz-news-search)
+- [Python client](https://docs.webz.io/docs/webz/news-search-api-python) (draft: [docs/python_integration_doc.md](python_integration_doc.md))
 - [Groq integration](https://docs.webz.io/docs/webz/news-search-api-groq) (draft: [docs/groq_integration_doc.md](groq_integration_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)
