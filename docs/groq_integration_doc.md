@@ -218,5 +218,6 @@ Contribution bundle: `packages/groq/cookbook/` in the [repo](https://github.com/
 - [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters)
 - [Groq remote MCP](https://console.groq.com/docs/tool-use/remote-mcp)
 - [Groq Responses API](https://console.groq.com/docs/responses-api)
+- [Python client](https://docs.webz.io/docs/webz/news-search-api-python) (draft: [docs/python_integration_doc.md](python_integration_doc.md))
 - [Vercel AI SDK integration](https://docs.webz.io/docs/webz/news-search-api-vercel-ai-sdk) (draft: [docs/ai_sdk_doc.md](ai_sdk_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)

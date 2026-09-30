@@ -177,5 +177,6 @@ Use `aget_webz_tools()` / `awebz_news_search()` instead.
 - [LangChain tools listing (WebzNewsSearch)](https://docs.langchain.com/oss/python/integrations/tools/index#all-tools-and-toolkits)
 - [PyPI: langchain-webz](https://pypi.org/project/langchain-webz/)
 - [CrewAI Webzio integration](crewai_integration_doc.md)
+- [Python client](https://docs.webz.io/docs/webz/news-search-api-python) (draft: [docs/python_integration_doc.md](python_integration_doc.md))
 - [Groq integration](https://docs.webz.io/docs/webz/news-search-api-groq) (draft: [docs/groq_integration_doc.md](groq_integration_doc.md))
 - [GitHub: webz-news-search](https://github.com/Webhose/webz-news-search)

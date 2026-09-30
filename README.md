@@ -8,6 +8,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 
 | Package | Registry | Path |
 | --- | --- | --- |
+| `webzio-news-search` | PyPI | `packages/news-search` |
 | `langchain-webz` | PyPI | `packages/langchain` |
 | `llama-index-tools-webz` | PyPI | `packages/llamaindex` |
 | `ag2-webzio` | PyPI | `packages/ag2` |
@@ -15,6 +16,10 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
 | `n8n-nodes-webz-news-search` | npm | [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search) |
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
+
+## Direct API client
+
+[`webzio-news-search`](packages/news-search) is the exception to the MCP rule: it calls the [News Search API](https://docs.webz.io/docs/webz/news-search-api) (`POST /api/news/context`) directly with `httpx`, returns typed results, and ships a JSON tool schema plus `run_tool()` for any LLM with function calling. Use it when you do not want an MCP client or agent framework in the loop.
 
 ## Official MCP Registry
 
