@@ -6,7 +6,7 @@
 >
 > **Suggested title:** n8n integration
 >
-> **Also add:** link from the Framework SDKs index page and from MCP Server (n8n is an MCP client, so it belongs in the Step 2 client list next to Cursor and Claude Code).
+> **Also add:** link from the Framework SDKs index page. The built-in MCP Client Tool path also belongs in the MCP Server Step 2 client list next to Cursor and Claude Code. The community node calls the REST API.
 
 ---
 
@@ -14,7 +14,7 @@
 
 Use **Webz.io Contextual News Search** inside [n8n](https://n8n.io/) workflows and AI agents with the official community node [`n8n-nodes-webz-news-search`](https://www.npmjs.com/package/n8n-nodes-webz-news-search).
 
-The node is a thin wrapper around the hosted [News Search MCP server](https://docs.webz.io/docs/webz/news-search-api-mcp). Filter schemas come live from `tools/list` on the server. When Webz adds new filters, they are reachable through **Additional Fields (JSON)** without republishing the node.
+The community node calls the [News Search API](https://docs.webz.io/docs/webz/news-search-api) with `POST https://api.webz.io/api/news/context`. When Webz adds new filters, they are reachable through **Additional Fields (JSON)** without republishing the node.
 
 n8n also ships a built-in **MCP Client Tool** node that talks to remote MCP servers, so there are two ways to search Webz news from n8n:
 
@@ -23,7 +23,7 @@ n8n also ships a built-in **MCP Client Tool** node that talks to remote MCP serv
 | **`n8n-nodes-webz-news-search`** community node | Standalone workflows, one output item per article, Sheets and Slack automations with no LLM in the loop |
 | Built-in [**MCP Client Tool**](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolmcp) node | AI Agent workflows where the model picks filters itself from the live MCP schema |
 
-Both use the same token, the same MCP server, and the same search logic, and they can be combined in one workflow.
+Both use the same token and the same News Search credits. The community node calls the REST API. The MCP Client Tool calls the hosted MCP server. They can be combined in one workflow.
 
 Webz is distributed as an [n8n community node](https://docs.n8n.io/integrations/community-nodes/) on npm. Discoverability is via npm, this docs page, and the node search box inside n8n.
 
@@ -58,7 +58,7 @@ N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 
 Add a **Webz.io News Search API** credential and paste your Webz.io API token.
 
-The credential test calls MCP `initialize` only, so saving it does not consume search credits.
+The credential test runs one search with `k` of 1, so saving a credential uses one News Search credit.
 
 Paste the token even if it already exists in a `.env` file on the host. n8n keeps credentials in its own encrypted store and never reads your project's environment.
 
@@ -92,18 +92,17 @@ With **Simplify** enabled, each article arrives as its own n8n item:
 }
 ```
 
-Turn **Simplify** off to get the raw MCP text response as a single `{ "result": "..." }` item.
+Turn **Simplify** off to get the API JSON body as a single item.
 
-Each execution uses your News Search API credits and rate limits, same as the MCP server or REST API.
+Each execution uses your News Search API credits and rate limits.
 
 ## Filtered search
 
-Open **Additional Filters** and add any of the following. Everything is optional, most filters accept multiple values, and the accepted values match the [MCP tool reference](https://docs.webz.io/docs/webz/news-search-api-mcp#tool-reference).
+Open **Additional Filters** and add any of the following. Everything is optional. Most filters accept multiple values. `source_type` and `trust_category` take a single value. `days` is converted to `filters.published_from` before the request. Accepted values match the [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters).
 
 | Filter | Notes |
 | --- | --- |
-| Days | Lookback window. Leave at 0 for the server default |
-| Search All Dates | Search the full indexed window instead of a lookback period |
+| Days | Lookback window. Leave at 0 for the API default. Coverage is the last 30 days. The node sends this as `filters.published_from` |
 | Language | Full names, not codes: `english`, `french`, `arabic` |
 | Country | ISO-2 uppercase: `US`, `GB`, `IL` |
 | Sentiment | `positive`, `negative`, `neutral` |
@@ -111,13 +110,13 @@ Open **Additional Filters** and add any of the following. Everything is optional
 | Domain / Exclude Domain | Restrict to or skip source domains. A domain must never appear in both |
 | Topic, Person, Organization, Location | Entity and context enrichment |
 | Ticker | Uppercase symbols: `NVDA`, `AAPL` |
-| Source Type, Political Bias, Trust Category | Source characteristics |
+| Source Type | One value: `local_news`, `newsroom`, or `gov_news` |
+| Political Bias | `left`, `center`, `right` |
+| Trust Category | One value: `trusted_news`, `fake_news`, or `satirical_news` |
 | Domain Rank ≥ / ≤ | Source rank range, lower is more popular |
-| Score ≥ / ≤ | Match score 0-10. Leave at 0 to use the server default |
-| Trust ≥ | Minimum trust score, 0.0 to 1.0 |
-| Sort By | `best_score`, `similarity`, `date_desc`, `date_asc` |
+| Score ≥ / ≤ | Match score 0-10. Leave at 0 to use the API default |
 | Allow Multiple Chunks Per Article | Return more than one matching passage from the same article |
-| Additional Fields (JSON) | Escape hatch for server-side filters newer than the node |
+| Additional Fields (JSON) | Extra API fields. Top-level keys such as `score_gte` stay at the top level; other keys go into `filters` |
 
 See [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters) for the full list of accepted values.
 
@@ -217,32 +216,34 @@ All three alerting templates guard their output: agent responses are forced thro
 ## How it works
 
 ```
-n8n workflow
+Community node
+n8n-nodes-webz-news-search
     ↓
-n8n-nodes-webz-news-search (npm)   or   built-in MCP Client Tool node
+POST https://api.webz.io/api/news/context
+
+MCP Client Tool
     ↓
-Hosted MCP server: https://news-search-mcp.webz.io/mcp
+https://news-search-mcp.webz.io/mcp
     ↓
 Webz News Search API
 ```
 
 - **Node type:** `n8n-nodes-webz-news-search.webzNewsSearch`, plus `...webzNewsSearchTool` for agent use
-- **Tool name:** `news_search_by_webz` (from MCP `tools/list`)
-- **Schema:** read live from the MCP server, not hardcoded in the node
+- **Community node:** one `POST` per input item. `days` becomes `filters.published_from`. Simplify splits `results` into one item per article
+- **MCP Client Tool:** tool name `news_search_by_webz`, schema read live from MCP `tools/list`
 - **Auth:** `Authorization: Bearer <WEBZ_API_TOKEN>`
-- **Sessions:** the community node opens one MCP session per execution and closes it when finished
-- **Credits:** same as News Search API and MCP
+- **Credits:** same News Search API credits for both paths
 
 ## Configuration
 
 | Name | Default | Description |
 | --- | --- | --- |
 | API Token | required | Credential field, from the Webz.io dashboard |
-| MCP URL | `https://news-search-mcp.webz.io/mcp` | Hidden credential field, for testing against another MCP endpoint |
+| API URL | `https://api.webz.io/api/news/context` | Hidden credential field on the community node, for a proxy or alternate deployment |
 | `N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE` | `false` | Self-hosted only. Required to use the node as an AI Agent tool |
 | `GENERIC_TIMEZONE` | `UTC` | Self-hosted only. Affects scheduled workflows |
 
-## MCP vs n8n community node
+## Which n8n path to use
 
 | Approach | Best for |
 | --- | --- |
@@ -250,7 +251,7 @@ Webz News Search API
 | MCP Client Tool node in n8n | n8n AI Agent workflows that pick filters from the live schema |
 | **n8n-nodes-webz-news-search** | n8n workflows that need structured article rows without an LLM |
 
-Both use the same token, the same MCP server, and the same search logic. Pick the integration that matches your workflow.
+The community node calls the REST API. The MCP Client Tool calls the hosted MCP server. Both use the same token and the same credits.
 
 ## Troubleshooting
 
@@ -276,10 +277,11 @@ Drop those two filters and retry before concluding there is no coverage.
 Confirm the Bearer Auth credential holds the token, and leave **Tools** set to `All` because of [n8n#23421](https://github.com/n8n-io/n8n/issues/23421).
 
 **Self-hosted instance cannot reach the server**  
-Allow outbound HTTPS from the n8n container to `news-search-mcp.webz.io`.
+Allow outbound HTTPS from the n8n container to `api.webz.io` for the community node, and to `news-search-mcp.webz.io` for the MCP Client Tool.
 
 ## Related links
 
+- [News Search API](https://docs.webz.io/docs/webz/news-search-api)
 - [News Search MCP Server](https://docs.webz.io/docs/webz/news-search-api-mcp)
 - [News Search API filters](https://docs.webz.io/docs/webz/news-search-api-filters)
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
