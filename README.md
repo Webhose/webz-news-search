@@ -19,7 +19,9 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 
 ## Direct API client
 
-[`webzio-news-search`](packages/news-search) is the exception to the MCP rule: it calls the [News Search API](https://docs.webz.io/docs/webz/news-search-api) (`POST /api/news/context`) directly with `httpx`, returns typed results, and ships a JSON tool schema plus `run_tool()` for any LLM with function calling. Use it when you do not want an MCP client or agent framework in the loop.
+[`webzio-news-search`](packages/news-search) calls the [News Search API](https://docs.webz.io/docs/webz/news-search-api) (`POST /api/news/context`) directly with `httpx`, returns typed results, and ships a JSON tool schema plus `run_tool()` for any LLM with function calling. Use it when you do not want an MCP client or agent framework in the loop.
+
+The n8n community node [`n8n-nodes-webz-news-search`](https://github.com/Webhose/n8n-nodes-webz-news-search) calls the same endpoint. The built-in n8n MCP Client Tool still talks to the hosted MCP server.
 
 ## Official MCP Registry
 
@@ -40,7 +42,7 @@ Reference implementation, runnable examples, and the [groq-api-cookbook](https:/
 
 Two paths:
 
-- **Community node** ([`n8n-nodes-webz-news-search`](https://github.com/Webhose/n8n-nodes-webz-news-search)): standalone workflows, structured article output, and optional use as an AI Agent tool.
+- **Community node** ([`n8n-nodes-webz-news-search`](https://github.com/Webhose/n8n-nodes-webz-news-search)): calls `POST https://api.webz.io/api/news/context`. Standalone workflows, structured article output, and optional use as an AI Agent tool.
 - **Built-in MCP Client Tool** ([`n8n/`](n8n)): no install step; connect an AI Agent directly to the MCP server so filters still come from `tools/list` at runtime.
 
 Setup steps and importable workflow templates are in [`n8n/`](n8n).

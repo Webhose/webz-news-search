@@ -9,7 +9,7 @@ You can use Webz.io news search in n8n two ways:
 | [`n8n-nodes-webz-news-search`](https://github.com/Webhose/n8n-nodes-webz-news-search) community node | Standalone workflows, structured article rows, Sheets/Slack automations without an LLM |
 | Built-in **MCP Client Tool** (below) | AI Agent workflows where the model picks filters from the live MCP schema |
 
-Both talk to the same hosted MCP server and follow the same filter rules as the [`langchain-webz`](../packages/langchain), [`llama-index-tools-webz`](../packages/llamaindex), [`ag2-webzio`](../packages/ag2), and [`@webz.io/ai-sdk`](../packages/ai-sdk) packages.
+The community node calls `POST https://api.webz.io/api/news/context`. The MCP Client Tool calls the hosted MCP server, the same one used by [`langchain-webz`](../packages/langchain), [`llama-index-tools-webz`](../packages/llamaindex), [`ag2-webzio`](../packages/ag2), and [`@webz.io/ai-sdk`](../packages/ai-sdk). Both use the same token and the same credits.
 
 ## Community node
 
@@ -19,7 +19,7 @@ Install from **Settings → Community nodes**:
 n8n-nodes-webz-news-search
 ```
 
-Then add a **Webz.io News Search** node, create a **Webz.io News Search API** credential with your token, and run a search. With **Simplify** enabled, each article becomes its own item with `title`, `url`, `published`, `score`, and `excerpt`.
+Then add a **Webz.io News Search** node, create a **Webz.io News Search API** credential with your token, and run a search. The credential test runs one search, so it uses one credit. With **Simplify** enabled, each article becomes its own item with `title`, `url`, `published`, `score`, and `excerpt`. `days` is sent as `filters.published_from`.
 
 To attach the node to an **AI Agent** on self-hosted n8n, set `N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true`.
 
@@ -90,6 +90,8 @@ Note that your Webz.io token has to be pasted into the n8n credential even if it
 
 ## Filters
 
+This list is what the MCP Client Tool exposes to an agent. The community node has its own form for the same search, and it sends `days` as `filters.published_from`.
+
 The agent reads the filter schema from the server and picks filters itself, but naming them in your prompt gives you far more control. `query` is the only required one.
 
 | Filter | Notes |
@@ -128,7 +130,7 @@ Give me the headline, publisher, and URL for each.
 - **Set the timezone before trusting a schedule.** Three of the templates are scheduled and n8n defaults to UTC, so an 08:00 digest fires at 08:00 UTC until you change it. On n8n Cloud set it per workflow under **Workflow Settings → Timezone**, or instance-wide in your account settings. When self-hosting, set the `GENERIC_TIMEZONE` environment variable.
 - **The MCP Client Tool is an agent sub-node.** It cannot run on its own, so every workflow using it needs an AI Agent node and a chat model. For news search without an LLM in the loop, use the [`n8n-nodes-webz-news-search`](https://github.com/Webhose/n8n-nodes-webz-news-search) community node instead.
 - **Any tool-calling model works.** The templates use OpenAI because it is the most common default. Swap the chat model node for Anthropic, Google, Ollama, or an OpenRouter-backed OpenAI-compatible node and the rest of the workflow is unchanged.
-- **Self-hosted n8n needs network access** from the n8n container to `news-search-mcp.webz.io` over HTTPS.
+- **Self-hosted n8n needs network access** over HTTPS to `api.webz.io` for the community node, and to `news-search-mcp.webz.io` for the MCP Client Tool.
 - **Calls use your normal API credits.** Each tool call is a regular News Search API request, with the same credits and rate limits as any other client.
 - **Name the `query` argument explicitly in prompts.** There is also a `topic` filter, and models will otherwise put the search subject there and get a validation error, since `topic` expects a list. Tell the agent to pass the subject as `query`.
 - **The research agent does not stream its reply.** Verification and formatting happen in nodes *after* the agent, so the chat panel waits for the whole pipeline and then shows the composed briefing from **Reply with the briefing**. Streaming would have to bypass those steps, which is the opposite of the point.

@@ -18,7 +18,7 @@ Use **Webz.io Contextual News Search** from Python with [`webzio-news-search`](h
 
 The package has one dependency (`httpx`). It does not use the [MCP server](https://docs.webz.io/docs/webz/news-search-api-mcp) and it does not require LangChain, LlamaIndex, CrewAI, or any other agent framework. Use it in scripts, services, and notebooks, or hand its JSON tool schema to any LLM that supports function calling.
 
-Framework wrappers that connect through MCP are documented separately: [LangChain](https://docs.webz.io/docs/webz/news-search-api-langchain), [LlamaIndex](https://docs.webz.io/docs/webz/news-search-api-llamaindex), [AG2](https://docs.webz.io/docs/webz/ag2-webzio), [CrewAI](https://docs.webz.io/docs/webz/crewai-webzio), [Vercel AI SDK](https://docs.webz.io/docs/webz/news-search-api-vercel-ai-sdk), [Groq](https://docs.webz.io/docs/webz/news-search-api-groq), [n8n](https://docs.webz.io/docs/webz/news-search-api-n8n), and [Dify](https://docs.webz.io/docs/webz/news-search-api-dify).
+The [n8n community node](https://docs.webz.io/docs/webz/news-search-api-n8n) calls this same REST API. Framework wrappers that connect through MCP are documented separately: [LangChain](https://docs.webz.io/docs/webz/news-search-api-langchain), [LlamaIndex](https://docs.webz.io/docs/webz/news-search-api-llamaindex), [AG2](https://docs.webz.io/docs/webz/ag2-webzio), [CrewAI](https://docs.webz.io/docs/webz/crewai-webzio), [Vercel AI SDK](https://docs.webz.io/docs/webz/news-search-api-vercel-ai-sdk), [Groq](https://docs.webz.io/docs/webz/news-search-api-groq), and [Dify](https://docs.webz.io/docs/webz/news-search-api-dify). The n8n page also covers n8n's built-in MCP Client Tool.
 
 ## Prerequisites
 
