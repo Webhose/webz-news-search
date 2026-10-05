@@ -16,6 +16,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
 | `n8n-nodes-webz-news-search` | npm | [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search) |
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
+| `webzio/news-search` | Apify Store | [apify.com/webzio/news-search](https://apify.com/webzio/news-search) |
 
 ## Direct API client
 
@@ -46,6 +47,12 @@ Two paths:
 - **Built-in MCP Client Tool** ([`n8n/`](n8n)): no install step; connect an AI Agent directly to the MCP server so filters still come from `tools/list` at runtime.
 
 Setup steps and importable workflow templates are in [`n8n/`](n8n).
+
+## Apify
+
+Not a PyPI package. The Actor is [`webzio/news-search`](https://apify.com/webzio/news-search). Users pay Apify. The Actor calls `POST https://api.webz.io/api/news/context` with one shared Webz token and writes one dataset row per article.
+
+Docs draft: [`docs/apify_integration_doc.md`](docs/apify_integration_doc.md)
 
 ## Dify
 
