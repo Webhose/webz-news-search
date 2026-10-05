@@ -1,0 +1,4 @@
+include extension.json
+include PUBLISHING.md
+include README.md
+include LICENSE

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.langflow.org/extension/v1.json",
+  "id": "lfx-webz",
+  "version": "0.1.0",
+  "name": "Webz.io News Search",
+  "description": "Search global news from the last 30 days with the Webz.io News Search API.",
+  "lfx": {
+    "compat": [
+      "1"
+    ]
+  },
+  "bundles": [
+    {
+      "name": "lfx_webz",
+      "path": ".",
+      "display_name": "Webz.io",
+      "icon": "Search"
+    }
+  ],
+  "capabilities": {
+    "requiresCredentials": true
+  }
+}
