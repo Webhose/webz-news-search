@@ -15,6 +15,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `crewai-webzio` | PyPI | `packages/crewai` |
 | `lfx-webz` | PyPI | `packages/langflow` |
 | `gpt-researcher-webz` | PyPI | `packages/gpt-researcher` |
+| `webz-haystack` | PyPI | `packages/haystack` |
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
 | `n8n-nodes-webz-news-search` | npm | [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search) |
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
