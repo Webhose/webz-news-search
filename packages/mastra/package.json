@@ -1,0 +1,62 @@
+{
+  "name": "@webz.io/mastra",
+  "version": "0.1.0",
+  "description": "Mastra tools for Webz.io News Search - global news in natural language with semantic ranking and rich filters",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "example:search": "tsx examples/run-news-search.ts",
+    "example:agent": "tsx examples/run-agent.ts",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "keywords": [
+    "mastra",
+    "webz",
+    "news",
+    "mcp",
+    "search"
+  ],
+  "author": "Webz.io <support@webz.io>",
+  "license": "MIT",
+  "homepage": "https://news-search-mcp.webz.io",
+  "bugs": {
+    "url": "https://github.com/Webhose/webz-news-search/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Webhose/webz-news-search.git",
+    "directory": "packages/mastra"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "@mastra/mcp": "^2.2.0"
+  },
+  "peerDependencies": {
+    "@mastra/core": ">=1.75.0-0 <2.0.0-0"
+  },
+  "devDependencies": {
+    "@mastra/core": "^1.75.0",
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0",
+    "zod": "^4.1.8"
+  }
+}
