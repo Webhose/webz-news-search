@@ -9,6 +9,8 @@ This repo is public. Docs, packages, and n8n templates stay here. Binding agent 
 
 Follow the files below. Do not copy them into this repository.
 
+New n8n templates start from `../webz-news-search-instructions/n8n-base-template.json`. Read that workflow and the linked `n8n-templates.md` before creating one. Do not copy the generator into this repo.
+
 If a linked file does not load, read it from `../webz-news-search-instructions/` before editing. The checkout layout is one parent directory with `webz-news-search` and `webz-news-search-instructions` side by side.
 
 @.cursor/instructions/AGENTS.md
