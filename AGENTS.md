@@ -10,6 +10,7 @@ Before editing, read:
 - `../webz-news-search-instructions/context.md`
 - `../webz-news-search-instructions/upstream-prs.md`
 - `../webz-news-search-instructions/n8n-templates.md`
+- `../webz-news-search-instructions/n8n-base-template.json` — read this before creating a file under `n8n/templates/`. It is the sticky-note generator new templates start from. Do not copy it into this repo.
 - `../webz-news-search-instructions/n8n-demo-video.md`
 
 The same files are linked from `.cursor/rules/private-instructions.mdc` through `.cursor/instructions`. Both repos must be checked out as siblings or that link does not resolve.
