@@ -1,0 +1,29 @@
+{
+  "name": "webz-io",
+  "version": "1.0.0",
+  "description": "Search Webz.io news, blogs, and forums, and analyze coverage with segmentation counts.",
+  "mcpServers": {
+    "webz-news-search": {
+      "httpUrl": "https://news-search-mcp.webz.io/mcp"
+    },
+    "webz-news": {
+      "httpUrl": "https://news-mcp.webz.io/mcp"
+    },
+    "webz-blogs": {
+      "httpUrl": "https://blogs-mcp.webz.io/mcp"
+    },
+    "webz-forums": {
+      "httpUrl": "https://forums-mcp.webz.io/mcp"
+    },
+    "webz-news-segmentation": {
+      "httpUrl": "https://seg-news-mcp.webz.io/mcp"
+    },
+    "webz-blogs-segmentation": {
+      "httpUrl": "https://seg-blogs-mcp.webz.io/mcp"
+    },
+    "webz-forums-segmentation": {
+      "httpUrl": "https://seg-forums-mcp.webz.io/mcp"
+    }
+  },
+  "contextFileName": "GEMINI.md"
+}

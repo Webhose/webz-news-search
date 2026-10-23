@@ -22,6 +22,16 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
 | `webzio/news-search` | Apify Store | [apify.com/webzio/news-search](https://apify.com/webzio/news-search) |
 
+## Gemini CLI
+
+The `webz-io` extension connects Gemini CLI directly to seven hosted Webz.io MCP servers: News Search, News, Blogs, Forums, and the three segmentation servers. Tool schemas and OAuth settings are discovered from the live servers.
+
+```sh
+gemini extensions install https://github.com/Webhose/webz-news-search
+```
+
+Restart Gemini CLI and use `/mcp auth <server-name>` to connect the products your account can access. For example: `/mcp auth webz-news-search`. [Setup, server list, and examples](docs/gemini-cli.md).
+
 ## Direct API client
 
 [`webzio-news-search`](packages/news-search) calls the [News Search API](https://docs.webz.io/docs/webz/news-search-api) (`POST /api/news/context`) directly with `httpx`, returns typed results, and ships a JSON tool schema plus `run_tool()` for any LLM with function calling. Use it when you do not want an MCP client or agent framework in the loop.
