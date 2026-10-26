@@ -21,6 +21,8 @@ When a Webz connection needs authentication, complete Kiro's browser-based OAuth
 
 OAuth discovery, consent, scopes, and credential storage are managed by Kiro. Webz.io authorization uses the `mcp` scope. This Agent Plugins package contains only public connection URLs; the portable format does not declare OAuth credentials or scopes. If authentication reports a scope error, refer to Kiro's [client-managed OAuth configuration](https://kiro.dev/docs/mcp/configuration/#oauth-authentication).
 
+OAuth discovery and registration share Webz.io's MCP rate limits. Multiple bundled connections may initialize together during installation. If OAuth setup returns HTTP 429, stop all retries for at least ten minutes. Then use Kiro's **MCP Servers** panel to choose **Authenticate** or **Retry** for one Webz.io entry at a time.
+
 The package contains no API token, secret header, credential file, or automatic tool approval. Kiro manages the connections with Power activation and deactivation. Its installed server names are namespaced, for example `webz-news-search` may appear as `power-webz-io-webz-news-search`.
 
 ## Choose a tool
