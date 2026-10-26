@@ -1,0 +1,19 @@
+{
+  "name": "webz-io",
+  "version": "1.0.0",
+  "description": "Search news, blogs, and forums with Webz.io, and aggregate matching content with three segmentation tools.",
+  "author": {
+    "name": "Webz.io",
+    "url": "https://webz.io/"
+  },
+  "homepage": "https://webz.io/",
+  "repository": "https://github.com/Webhose/webz-news-search",
+  "license": "MIT",
+  "keywords": [
+    "webz",
+    "webz.io",
+    "webz-io"
+  ],
+  "mcpServers": "./.mcp.json"
+}
+
