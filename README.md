@@ -32,6 +32,12 @@ gemini extensions install https://github.com/Webhose/webz-news-search
 
 Restart Gemini CLI and use `/mcp auth <server-name>` to connect the products your account can access. For example: `/mcp auth webz-news-search`. [Setup, server list, and examples](docs/gemini-cli.md).
 
+## Kiro Power
+
+The `webz-io` Power connects Kiro to all seven hosted Webz.io MCP servers, with skills for public web research and content segmentation. Import `packages/kiro-power` from the Kiro Powers panel to connect your Webz.io account. [Installation, authentication, and examples](packages/kiro-power/README.md).
+
+Webz.io product access and credits are required. [Privacy Policy](https://webz.io/privacy/) · [Support](mailto:support@webz.io).
+
 ## Direct API client
 
 [`webzio-news-search`](packages/news-search) calls the [News Search API](https://docs.webz.io/docs/webz/news-search-api) (`POST /api/news/context`) directly with `httpx`, returns typed results, and ships a JSON tool schema plus `run_tool()` for any LLM with function calling. Use it when you do not want an MCP client or agent framework in the loop.
