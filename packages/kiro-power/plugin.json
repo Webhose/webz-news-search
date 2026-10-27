@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "webz-io",
+  "version": "1.0.0",
+  "description": "Research public web coverage with Webz.io news, blogs, forums, and content segmentation.",
+  "author": {
+    "name": "Webz.io",
+    "email": "support@webz.io",
+    "url": "https://webz.io/"
+  },
+  "keywords": [
+    "webz",
+    "webz.io",
+    "webz news",
+    "webz blogs",
+    "webz forums",
+    "webz segmentation",
+    "news research",
+    "blog research",
+    "forum research",
+    "media monitoring"
+  ],
+  "homepage": "https://webz.io/",
+  "repository": "https://github.com/Webhose/webz-news-search",
+  "license": "MIT"
+}
