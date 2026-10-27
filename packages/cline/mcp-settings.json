@@ -1,0 +1,46 @@
+{
+  "mcpServers": {
+    "webz-news-search": {
+      "type": "streamableHttp",
+      "url": "https://news-search-mcp.webz.io/mcp",
+      "disabled": true,
+      "autoApprove": []
+    },
+    "webz-news": {
+      "type": "streamableHttp",
+      "url": "https://news-mcp.webz.io/mcp",
+      "disabled": true,
+      "autoApprove": []
+    },
+    "webz-blogs": {
+      "type": "streamableHttp",
+      "url": "https://blogs-mcp.webz.io/mcp",
+      "disabled": true,
+      "autoApprove": []
+    },
+    "webz-forums": {
+      "type": "streamableHttp",
+      "url": "https://forums-mcp.webz.io/mcp",
+      "disabled": true,
+      "autoApprove": []
+    },
+    "webz-news-segmentation": {
+      "type": "streamableHttp",
+      "url": "https://seg-news-mcp.webz.io/mcp",
+      "disabled": true,
+      "autoApprove": []
+    },
+    "webz-blogs-segmentation": {
+      "type": "streamableHttp",
+      "url": "https://seg-blogs-mcp.webz.io/mcp",
+      "disabled": true,
+      "autoApprove": []
+    },
+    "webz-forums-segmentation": {
+      "type": "streamableHttp",
+      "url": "https://seg-forums-mcp.webz.io/mcp",
+      "disabled": true,
+      "autoApprove": []
+    }
+  }
+}
