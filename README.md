@@ -46,10 +46,12 @@ The n8n community node [`n8n-nodes-webz-news-search`](https://github.com/Webhose
 
 ## Official MCP Registry
 
-The bundle in [`mcp-registry/`](mcp-registry) publishes the hosted server to
+The bundle in [`mcp-registry/`](mcp-registry) publishes the hosted servers to
 [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io) as
-`io.webz/news-search`. Aggregators such as PulseMCP and Glama ingest the
-official registry, so this listing propagates downstream automatically.
+`io.webz/news-search`, `io.webz/news`, `io.webz/blogs`, `io.webz/forums`,
+`io.webz/seg-news`, `io.webz/seg-blogs`, and `io.webz/seg-forums`.
+Aggregators such as PulseMCP and Glama ingest the official registry, so these
+listings propagate downstream automatically.
 Publishing requires a one-time DNS TXT record on `webz.io` — see
 [`mcp-registry/PUBLISHING.md`](mcp-registry/PUBLISHING.md).
 

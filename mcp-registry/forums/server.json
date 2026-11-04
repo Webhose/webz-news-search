@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.webz/forums",
+  "title": "Webz.io Forums",
+  "description": "Forum and discussion threads. Use it for conversations on forums and boards.",
+  "repository": {
+    "url": "https://github.com/Webhose/webz-news-search",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "websiteUrl": "https://docs.webz.io/docs/webz/forums",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://forums-mcp.webz.io/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer YOUR_WEBZ_TOKEN - your Webz.io API token. Clients with OAuth support can omit it and authorize interactively.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
