@@ -38,6 +38,10 @@ The `webz-io` Power connects Kiro to all seven hosted Webz.io MCP servers, with 
 
 Webz.io product access and credits are required. [Privacy Policy](https://webz.io/privacy/) · [Support](mailto:support@webz.io).
 
+## Cline
+
+[Configure seven hosted Webz.io MCP connections in Cline](packages/cline/README.md), with browser OAuth, serial setup and agent-readable installation instructions.
+
 ## Direct API client
 
 [`webzio-news-search`](packages/news-search) calls the [News Search API](https://docs.webz.io/docs/webz/news-search-api) (`POST /api/news/context`) directly with `httpx`, returns typed results, and ships a JSON tool schema plus `run_tool()` for any LLM with function calling. Use it when you do not want an MCP client or agent framework in the loop.
