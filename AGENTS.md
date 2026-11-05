@@ -13,6 +13,6 @@ Before editing, read:
 - `../webz-news-search-instructions/n8n-base-template.json` — read this before creating a file under `n8n/templates/`. It is the sticky-note generator new templates start from. Do not copy it into this repo.
 - `../webz-news-search-instructions/n8n-demo-video.md`
 
-The same files are linked from `.cursor/rules/private-instructions.mdc` through `.cursor/instructions`. Both repos must be checked out as siblings or that link does not resolve.
+The same sibling paths are referenced in `.cursor/rules/private-instructions.mdc`. Both repos must be checked out as siblings. Read the files directly from the sibling checkout; no symlink is required.
 
 Do not commit upstream PR lists, local machine paths, n8n canvas-review notes, or the demo recording script here.
