@@ -19,3 +19,6 @@ node_modules/
 *.tgz
 *.difypkg
 mcp-registry/key.pem
+
+# Optional local link to private agent instructions.
+/.cursor/instructions
