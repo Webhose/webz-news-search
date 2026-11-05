@@ -83,7 +83,7 @@ This package connects to the hosted Webz News Search MCP server at `https://news
 | Name | Default | Purpose |
 | --- | --- | --- |
 | `WEBZ_API_TOKEN` | required | Webz API token from the dashboard |
-| `WEBZ_MCP_URL` | `https://news-search-mcp.webz.io/mcp` | Override for local MCP testing |
+| `WEBZ_MCP_URL` | `https://news-search-mcp.webz.io/mcp` | HTTPS override for local MCP testing |
 
 You can also pass `apiToken` and `mcpUrl` to the helpers.
 
