@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "webz": {
+      "type": "streamable-http",
+      "url": "https://news-search-mcp.webz.io/mcp",
+      "headers": {
+        "Authorization": "Bearer ${WEBZ_API_TOKEN}"
+      }
+    }
+  }
+}

@@ -18,6 +18,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `webz-haystack` | PyPI | `packages/haystack` |
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
 | `@webz.io/mastra` | npm | `packages/mastra` |
+| `webz-news-search` | Hermes Agent plugin catalog | `packages/hermes` |
 | `n8n-nodes-webz-news-search` | npm | [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search) |
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
 | `webzio/news-search` | Apify Store | [apify.com/webzio/news-search](https://apify.com/webzio/news-search) |

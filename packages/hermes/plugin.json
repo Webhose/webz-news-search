@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "webz-news-search",
+  "version": "0.1.0",
+  "description": "Search global news in natural language through the hosted Webz.io News Search MCP server.",
+  "author": {
+    "name": "Webz.io",
+    "url": "https://webz.io"
+  },
+  "repository": "https://github.com/Webhose/webz-news-search",
+  "homepage": "https://docs.webz.io/docs/webz/news-search-api-mcp",
+  "license": "MIT",
+  "keywords": ["webz", "news", "search", "current-events", "mcp"]
+}
