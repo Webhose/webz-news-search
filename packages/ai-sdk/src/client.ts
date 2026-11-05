@@ -51,6 +51,15 @@ export function resolveMcpUrl(mcpUrl?: string): string {
   if (!url) {
     throw new WebzConfigError("missing MCP url.");
   }
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new WebzConfigError("MCP url must be an absolute https:// URL.");
+  }
+  if (parsed.protocol !== "https:" || parsed.host.length === 0) {
+    throw new WebzConfigError("MCP url must be an absolute https:// URL.");
+  }
   return url.replace(/\/+$/, "");
 }
 

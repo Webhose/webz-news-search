@@ -11,6 +11,7 @@ import {
   TOKEN_ENV_NAME,
   WebzConfigError,
   buildMcpHeaders,
+  createWebzClient,
   flattenToolResult,
   getWebzTools,
   pickNewsSearchTool,
@@ -57,6 +58,7 @@ function mockClient(tools: Record<string, unknown> = fakeTools()) {
 
 afterEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
   delete process.env[TOKEN_ENV_NAME];
   delete process.env.WEBZ_MCP_URL;
 });
@@ -78,10 +80,50 @@ describe("config", () => {
     );
   });
 
+  it("uses an HTTPS environment override and prefers an explicit url", () => {
+    process.env.WEBZ_MCP_URL = " https://localhost:8765/mcp/ ";
+    expect(resolveMcpUrl()).toBe("https://localhost:8765/mcp");
+    expect(resolveMcpUrl("https://example.test/mcp")).toBe(
+      "https://example.test/mcp",
+    );
+  });
+
   it("builds a bearer header", () => {
     expect(buildMcpHeaders("secret-token")).toEqual({
       Authorization: "Bearer secret-token",
     });
+  });
+});
+
+describe("createWebzClient", () => {
+  it.each([
+    "http://example.test/mcp",
+    "http://localhost:8765/mcp",
+    "ftp://example.test/mcp",
+    "/mcp",
+    "https://",
+    "https://example.test:invalid/mcp",
+  ])("rejects %s before creating a client or sending a request", async (mcpUrl) => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createWebzClient({ apiToken: "tok", mcpUrl })).rejects.toThrow(
+      WebzConfigError,
+    );
+    expect(createMCPClientMock).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an HTTP environment override before creating a client or sending a request", async () => {
+    process.env.WEBZ_MCP_URL = "http://example.test/mcp";
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createWebzClient({ apiToken: "tok" })).rejects.toThrow(
+      WebzConfigError,
+    );
+    expect(createMCPClientMock).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 
