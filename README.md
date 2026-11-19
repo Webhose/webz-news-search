@@ -18,6 +18,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `webz-haystack` | PyPI | `packages/haystack` |
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
 | `@webz.io/mastra` | npm | `packages/mastra` |
+| `@webz.io/freellmapi` | npm | `packages/freellmapi` |
 | `n8n-nodes-webz-news-search` | npm | [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search) |
 | `webz_news_search` | Dify Marketplace (`.difypkg`) | `packages/dify` |
 | `webzio/news-search` | Apify Store | [apify.com/webzio/news-search](https://apify.com/webzio/news-search) |
@@ -37,6 +38,10 @@ Restart Gemini CLI and use `/mcp auth <server-name>` to connect the products you
 The `webz-io` Power connects Kiro to all seven hosted Webz.io MCP servers, with skills for public web research and content segmentation. Import `packages/kiro-power` from the Kiro Powers panel to connect your Webz.io account. [Installation, authentication, and examples](packages/kiro-power/README.md).
 
 Webz.io product access and credits are required. [Privacy Policy](https://webz.io/privacy/) · [Support](mailto:support@webz.io).
+
+## FreeLLMAPI
+
+[`@webz.io/freellmapi`](packages/freellmapi) is a custom search relay for [FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi). FreeLLMAPI posts Tavily's search JSON to `POST {base_url}/search`. The relay calls `POST https://api.webz.io/api/news/context` and returns title, URL, excerpt, and score. Register it under **Keys → Add key → Custom provider → Web search**.
 
 ## Direct API client
 

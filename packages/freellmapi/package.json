@@ -1,0 +1,56 @@
+{
+  "name": "@webz.io/freellmapi",
+  "version": "0.1.0",
+  "description": "FreeLLMAPI custom search relay for Webz.io News Search",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "webz-freellmapi": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "start": "tsx src/cli.ts",
+    "example:search": "tsx examples/run-news-search.ts",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "keywords": [
+    "freellmapi",
+    "webz",
+    "news",
+    "search"
+  ],
+  "author": "Webz.io <support@webz.io>",
+  "license": "MIT",
+  "homepage": "https://webz.io",
+  "bugs": {
+    "url": "https://github.com/Webhose/webz-news-search/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Webhose/webz-news-search.git",
+    "directory": "packages/freellmapi"
+  },
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
