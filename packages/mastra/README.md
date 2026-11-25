@@ -20,7 +20,7 @@ npm install @webz.io/mastra @mastra/core
 export WEBZ_API_TOKEN="your-webz-api-token"
 ```
 
-Get a token from your [Webz.io dashboard](https://webz.io) (same token as the News Search API). Requires Node.js 22.13 or newer, the same baseline as Mastra.
+Get a token from your [Webz.io dashboard](https://webz.io) (same token as the News Search API). Requires Node.js 22.13 or newer and `@mastra/core` 1.83 or newer.
 
 Full setup and client options: [MCP Server docs](https://docs.webz.io/docs/webz/news-search-api-mcp).
 
