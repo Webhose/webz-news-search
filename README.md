@@ -16,6 +16,7 @@ The MCP server is the source of truth. These packages are thin clients. New filt
 | `lfx-webz` | PyPI | `packages/langflow` |
 | `gpt-researcher-webz` | PyPI | `packages/gpt-researcher` |
 | `webz-haystack` | PyPI | `packages/haystack` |
+| `movieclaw-webz` | PyPI | `packages/movieclaw` |
 | `@webz.io/ai-sdk` | npm | `packages/ai-sdk` |
 | `@webz.io/mastra` | npm | `packages/mastra` |
 | `n8n-nodes-webz-news-search` | npm | [github.com/Webhose/n8n-nodes-webz-news-search](https://github.com/Webhose/n8n-nodes-webz-news-search) |
@@ -37,6 +38,10 @@ Restart Gemini CLI and use `/mcp auth <server-name>` to connect the products you
 The `webz-io` Power connects Kiro to all seven hosted Webz.io MCP servers, with skills for public web research and content segmentation. Import `packages/kiro-power` from the Kiro Powers panel to connect your Webz.io account. [Installation, authentication, and examples](packages/kiro-power/README.md).
 
 Webz.io product access and credits are required. [Privacy Policy](https://webz.io/privacy/) · [Support](mailto:support@webz.io).
+
+## MovieClaw
+
+MovieClaw's built-in web search stays a general web index. [`movieclaw-webz`](packages/movieclaw) is a separate package: a news search command and an agent skill the user copies into `data/agent-skills/`. It calls `POST https://api.webz.io/api/news/context`. MovieClaw does not connect to remote MCP servers. An outside agent can still add `https://news-search-mcp.webz.io/mcp` (tool `news_search_by_webz`) on its own.
 
 ## Direct API client
 
