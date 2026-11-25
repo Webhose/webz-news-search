@@ -68,7 +68,10 @@ function mockClient(
   });
   const disconnect = vi.fn().mockResolvedValue(undefined);
   const client = { listToolsetsWithErrors, disconnect };
-  MCPClientMock.mockImplementation(() => client as never);
+  // Vitest 4 only treats function/class implementations as constructable.
+  MCPClientMock.mockImplementation(function MockMCPClient() {
+    return client as never;
+  });
   return { client, listToolsetsWithErrors, disconnect };
 }
 
