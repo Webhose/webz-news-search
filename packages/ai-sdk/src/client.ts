@@ -122,7 +122,7 @@ export async function createWebzClient(options: WebzClientOptions = {}) {
   });
 }
 
-export async function getWebzTools<T extends WebzToolMap = WebzToolMap>(
+export async function getWebzTools<T extends WebzToolMap = McpToolSet>(
   options: WebzClientOptions = {},
 ): Promise<WebzToolsSession<T>> {
   const client = await createWebzClient(options);
@@ -139,7 +139,7 @@ export async function getWebzTools<T extends WebzToolMap = WebzToolMap>(
   };
 }
 
-export async function webzNewsSearch<T extends WebzToolMap = WebzToolMap>(
+export async function webzNewsSearch<T extends WebzToolMap = McpToolSet>(
   options: WebzClientOptions = {},
 ): Promise<WebzNewsSearchSession<T>> {
   const session = await getWebzTools<T>(options);
