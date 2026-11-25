@@ -3,7 +3,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createMCPClient } from "@ai-sdk/mcp";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import type { ToolSet } from "ai";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
   DEFAULT_MCP_URL,
@@ -130,6 +131,7 @@ describe("getWebzTools", () => {
       PREFERRED_TOOL_NAME,
       "extra_tool",
     ]);
+    expectTypeOf(session.tools).toExtend<ToolSet>();
     expect(session.client).toBe(client);
   });
 
